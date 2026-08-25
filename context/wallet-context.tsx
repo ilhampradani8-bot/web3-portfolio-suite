@@ -16,6 +16,7 @@ interface WalletContextType {
   disconnectWallet: () => void;
   clearWalletError: () => void;
   switchNetwork: (chainIdHex: string) => Promise<void>;
+  refreshBalance: () => Promise<void>;
 }
 
 const WalletContext = createContext<WalletContextType>({
@@ -30,6 +31,7 @@ const WalletContext = createContext<WalletContextType>({
   disconnectWallet: () => {},
   clearWalletError: () => {},
   switchNetwork: async () => {},
+  refreshBalance: async () => {},
 });
 
 export const WalletProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
@@ -41,10 +43,31 @@ export const WalletProvider: React.FC<{ children: React.ReactNode }> = ({ childr
   const [hasMetaMask, setHasMetaMask] = useState<boolean>(false);
   const [walletError, setWalletError] = useState<string | null>(null);
 
-  // Fetch REAL ETH Balance from EVM RPC Node
-  const updateRealBalance = async (userAddr: string, currentChainId: number) => {
+  // Fetch REAL ETH Balance directly from MetaMask provider or Viem RPC Node
+  const updateRealBalance = async (userAddr: string, targetChainId?: number) => {
+    if (!userAddr) return;
+
+    // 1. Try directly asking active MetaMask provider first
+    if (typeof window !== "undefined" && (window as any).ethereum) {
+      try {
+        const hexBalance = await (window as any).ethereum.request({
+          method: "eth_getBalance",
+          params: [userAddr, "latest"],
+        });
+        if (hexBalance) {
+          const formatted = (parseFloat(BigInt(hexBalance).toString()) / 1e18).toFixed(4);
+          setBalanceETH(formatted);
+          return;
+        }
+      } catch (e) {
+        console.warn("Direct eth_getBalance warning, falling back to Viem RPC", e);
+      }
+    }
+
+    // 2. Fallback to Viem RPC client
     try {
-      const targetChain = currentChainId === 11155111 ? sepolia : mainnet;
+      const activeChainId = targetChainId || chainId;
+      const targetChain = activeChainId === 11155111 ? sepolia : mainnet;
       const client = createPublicClient({
         chain: targetChain,
         transport: http(),
@@ -55,6 +78,12 @@ export const WalletProvider: React.FC<{ children: React.ReactNode }> = ({ childr
     } catch (err) {
       console.warn("Could not fetch balance from RPC node", err);
       setBalanceETH("0.0000");
+    }
+  };
+
+  const refreshBalance = async () => {
+    if (address) {
+      await updateRealBalance(address, chainId);
     }
   };
 
@@ -72,14 +101,24 @@ export const WalletProvider: React.FC<{ children: React.ReactNode }> = ({ childr
     if (ethereum) {
       setHasMetaMask(true);
 
-      // Auto-check if MetaMask already unlocked and connected
+      // 1. Fetch active Chain ID on load
+      ethereum
+        .request({ method: "eth_chainId" })
+        .then((hexChainId: string) => {
+          const numericChainId = parseInt(hexChainId, 16);
+          setChainId(numericChainId);
+          setChainName(numericChainId === 11155111 ? "Sepolia Testnet" : "Ethereum Mainnet");
+        })
+        .catch(() => {});
+
+      // 2. Auto-check if MetaMask already unlocked and connected
       ethereum
         .request({ method: "eth_accounts" })
         .then((accounts: string[]) => {
           if (accounts && accounts.length > 0) {
             setAddress(accounts[0]);
             setIsConnected(true);
-            updateRealBalance(accounts[0], chainId);
+            updateRealBalance(accounts[0]);
           }
         })
         .catch(() => {});
@@ -89,7 +128,7 @@ export const WalletProvider: React.FC<{ children: React.ReactNode }> = ({ childr
           setAddress(accounts[0]);
           setIsConnected(true);
           setWalletError(null);
-          updateRealBalance(accounts[0], chainId);
+          updateRealBalance(accounts[0]);
         } else {
           disconnectWallet();
         }
@@ -98,11 +137,7 @@ export const WalletProvider: React.FC<{ children: React.ReactNode }> = ({ childr
       const handleChainChanged = (chainIdHex: string) => {
         const numericChainId = parseInt(chainIdHex, 16);
         setChainId(numericChainId);
-        if (numericChainId === 11155111) {
-          setChainName("Sepolia Testnet");
-        } else {
-          setChainName("Ethereum Mainnet");
-        }
+        setChainName(numericChainId === 11155111 ? "Sepolia Testnet" : "Ethereum Mainnet");
         if (address) {
           updateRealBalance(address, numericChainId);
         }
@@ -118,7 +153,7 @@ export const WalletProvider: React.FC<{ children: React.ReactNode }> = ({ childr
     } else {
       setHasMetaMask(false);
     }
-  }, []);
+  }, [address]);
 
   const connectWallet = async () => {
     setWalletError(null);
@@ -128,17 +163,23 @@ export const WalletProvider: React.FC<{ children: React.ReactNode }> = ({ childr
           method: "eth_requestAccounts",
         });
 
+        const hexChainId = await (window as any).ethereum.request({
+          method: "eth_chainId",
+        });
+        const numericChainId = parseInt(hexChainId, 16);
+        setChainId(numericChainId);
+        setChainName(numericChainId === 11155111 ? "Sepolia Testnet" : "Ethereum Mainnet");
+
         if (accounts && accounts.length > 0) {
           const userAddr = accounts[0];
           setAddress(userAddr);
           setIsConnected(true);
           setWalletError(null);
-          await updateRealBalance(userAddr, chainId);
+          await updateRealBalance(userAddr, numericChainId);
         }
       } catch (err: any) {
         console.warn("MetaMask Connection Warning:", err);
 
-        // Safe error code handling
         if (err?.code === 4001) {
           setWalletError("Koneksi dibatalkan: Anda menutup/menolak pop-up MetaMask.");
         } else if (err?.code === -32002) {
@@ -184,12 +225,12 @@ export const WalletProvider: React.FC<{ children: React.ReactNode }> = ({ childr
         disconnectWallet,
         clearWalletError,
         switchNetwork,
+        refreshBalance,
       }}
     >
       {children}
     </WalletContext.Provider>
   );
 };
-
 
 export const useWallet = () => useContext(WalletContext);
