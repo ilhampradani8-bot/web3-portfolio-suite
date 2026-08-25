@@ -1,0 +1,106 @@
+@import "tailwindcss";
+
+@layer base {
+  body {
+    @apply bg-slate-950 text-slate-100 antialiased font-sans min-h-screen selection:bg-cyan-500/30 selection:text-cyan-200;
+  }
+}
+
+/* ==========================================================================
+   Classic Bank / Institutional UI Mode (Times New Roman Serif & Full-Width Layout)
+   ========================================================================== */
+.theme-classic {
+  font-family: "Times New Roman", Times, Georgia, "Playfair Display", serif !important;
+  --bg-primary: #0b1329;
+  --card-bg: #111c38;
+  --border-color: #1e2d54;
+}
+
+.theme-classic * {
+  font-family: "Times New Roman", Times, Georgia, serif !important;
+}
+
+.theme-classic body {
+  background-color: #080d1a !important;
+  color: #e2e8f0 !important;
+}
+
+/* Full Width Container override for Classic Bank UI */
+.theme-classic main {
+  max-width: 100% !important;
+  padding-left: 1.5rem !important;
+  padding-right: 1.5rem !important;
+}
+
+@media (min-width: 1024px) {
+  .theme-classic main {
+    padding-left: 3rem !important;
+    padding-right: 3rem !important;
+  }
+}
+
+/* Traditional Bank Card & Container Overrides */
+.theme-classic .bg-slate-950,
+.theme-classic .bg-slate-900\/80,
+.theme-classic .bg-slate-900\/90,
+.theme-classic .bg-slate-900 {
+  background-color: #0f1933 !important;
+  border-color: #1e2e57 !important;
+  border-radius: 8px !important;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.4) !important;
+}
+
+.theme-classic header {
+  background-color: #0a1024 !important;
+  border-bottom: 2px solid #1e3a8a !important;
+}
+
+.theme-classic nav {
+  background-color: #0d1630 !important;
+  border-radius: 6px !important;
+}
+
+.theme-classic input, 
+.theme-classic select, 
+.theme-classic textarea {
+  background-color: #090f21 !important;
+  border-color: #1e3a8a !important;
+  border-radius: 6px !important;
+}
+
+/* Bank Accent Badges & Colors */
+.theme-classic .text-cyan-400,
+.theme-classic .text-cyan-300 {
+  color: #60a5fa !important;
+}
+
+.theme-classic .bg-cyan-500\/20,
+.theme-classic .bg-cyan-500\/10 {
+  background-color: #1e3a8a !important;
+  color: #93c5fd !important;
+  border-color: #3b82f6 !important;
+  border-radius: 4px !important;
+}
+
+.theme-classic button {
+  border-radius: 6px !important;
+}
+
+/* Custom Scrollbars */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: #020617;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #1e293b;
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #334155;
+}
