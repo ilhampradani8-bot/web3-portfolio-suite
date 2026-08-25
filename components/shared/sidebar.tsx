@@ -17,7 +17,8 @@ import {
   AlertCircle,
   ExternalLink,
   ShieldCheck,
-  RefreshCw
+  RefreshCw,
+  Rocket
 } from "lucide-react";
 
 export const Sidebar = () => {
@@ -31,6 +32,7 @@ export const Sidebar = () => {
     { name: "Staking dApp", href: "/staking", icon: Coins, badge: "12.4% APY" },
     { name: "DEX Scanner", href: "/arbitrage", icon: ArrowLeftRight, badge: "Arbitrage" },
     { name: "Data Dashboard", href: "/dashboard", icon: BarChart3, badge: "Analytics" },
+    { name: "Contract Deployer", href: "/contract-deployer", icon: Rocket, badge: "Deploy" },
   ];
 
   return (
