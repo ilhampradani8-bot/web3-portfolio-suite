@@ -1,9 +1,7 @@
 name = "web3-portfolio-suite"
 compatibility_date = "2024-08-01"
-pages_build_output_dir = ".next"
-
-[site]
-bucket = ".next"
+compatibility_flags = ["nodejs_compat"]
 
 [vars]
 NEXT_PUBLIC_DEFAULT_NETWORK = "mainnet"
+NEXT_PUBLIC_ALCHEMY_API_KEY = "alch_DXNMWIMwQ-2-KsLr5ywty"
