@@ -1,6 +1,8 @@
 name = "web3-portfolio-suite"
 compatibility_date = "2024-08-01"
-compatibility_flags = ["nodejs_compat"]
+
+[site]
+bucket = "./out"
 
 [vars]
 NEXT_PUBLIC_DEFAULT_NETWORK = "mainnet"
