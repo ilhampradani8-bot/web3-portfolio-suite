@@ -217,27 +217,7 @@ export const QuickSettingsModal: React.FC<QuickSettingsModalProps> = ({ isOpen, 
               <span>{testStatus === "testing" ? "Mendeteksi..." : "Langkah 2: Deteksi Otomatis & Hubungkan 1-Click!"}</span>
             </button>
 
-            {/* Optional Manual Override Accordion */}
-            <div className="pt-2">
-              <details className="text-[11px] font-mono text-slate-500 border border-slate-200 p-2.5">
-                <summary className="cursor-pointer font-bold text-slate-700">Opsi Manual (Input Chat ID):</summary>
-                <div className="mt-2 space-y-2">
-                  <input
-                    type="text"
-                    value={telegramChatId}
-                    onChange={(e) => setTelegramChatId(e.target.value)}
-                    placeholder="Chat ID (Opsional)"
-                    className="w-full font-mono text-xs"
-                  />
-                  <button
-                    onClick={handleSaveAndTest}
-                    className="px-3 py-1.5 bg-slate-900 text-white text-xs font-bold w-full"
-                  >
-                    Simpan Manual
-                  </button>
-                </div>
-              </details>
-            </div>
+
 
             {/* Feedback Status */}
             {testStatus !== "idle" && (

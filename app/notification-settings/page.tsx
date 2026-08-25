@@ -462,7 +462,7 @@ export default function NotificationSettingsPage() {
 
         </div>
 
-        {/* Right Column: Security Architecture & Manual Input (5 Cols) */}
+        {/* Right Column: Security Architecture (5 Cols) */}
         <div className="lg:col-span-5 space-y-6">
           
           {/* Security Architecture Box */}
@@ -485,71 +485,8 @@ export default function NotificationSettingsPage() {
             </ul>
           </div>
 
-          {/* Optional Manual Developer Override Accordion */}
-          <div className="border border-slate-300 bg-white p-6 shadow-xs space-y-4">
-            <details className="text-xs font-mono space-y-3">
-              <summary className="cursor-pointer font-bold text-slate-900 uppercase flex items-center justify-between">
-                <span>Opsi Manual (Developer Override)</span>
-                <span className="text-[10px] text-slate-500 font-normal">Klik untuk membuka</span>
-              </summary>
-
-              <div className="pt-3 space-y-4 font-sans text-slate-700">
-                <div>
-                  <label className="block text-xs font-mono font-bold text-slate-800 uppercase mb-1">
-                    Custom Bot Token (Opsional):
-                  </label>
-                  <div className="relative font-mono text-xs">
-                    <input
-                      type={showToken ? "text" : "password"}
-                      value={telegramToken}
-                      onChange={(e) => setTelegramToken(e.target.value)}
-                      placeholder="Kosongkan untuk memakai Bot Default (@web3_ilhampradani_bot)"
-                      className="w-full pr-10"
-                    />
-                    <button
-                      type="button"
-                      onClick={() => setShowToken(!showToken)}
-                      className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-500 hover:text-slate-800"
-                    >
-                      {showToken ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
-                    </button>
-                  </div>
-                </div>
-
-                <div>
-                  <label className="block text-xs font-mono font-bold text-slate-800 uppercase mb-1">
-                    Custom Chat ID (Opsional):
-                  </label>
-                  <input
-                    type="text"
-                    value={telegramChatId}
-                    onChange={(e) => setTelegramChatId(e.target.value)}
-                    placeholder="Contoh: 987654321"
-                    className="w-full font-mono text-xs font-bold"
-                  />
-                </div>
-
-                <div className="flex gap-2">
-                  <button
-                    type="button"
-                    onClick={handleTestTelegramConnection}
-                    className="w-full py-2.5 bg-indigo-600 text-white font-mono text-xs font-bold hover:bg-indigo-700"
-                  >
-                    Test Pesan Manual
-                  </button>
-                  <button
-                    type="button"
-                    onClick={handleSaveSettings}
-                    className="w-full py-2.5 bg-slate-900 text-white font-mono text-xs font-bold hover:bg-slate-800"
-                  >
-                    Simpan Manual
-                  </button>
-                </div>
-              </div>
-            </details>
-          </div>
-
         </div>
+
 
       </div>
 
