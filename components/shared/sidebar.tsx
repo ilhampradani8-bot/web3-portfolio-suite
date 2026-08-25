@@ -20,6 +20,7 @@ import {
   RefreshCw,
   Rocket
 } from "lucide-react";
+import { NotificationBell } from "@/components/shared/notification-bell";
 
 export const Sidebar = () => {
   const pathname = usePathname();
@@ -116,6 +117,7 @@ export const Sidebar = () => {
               <span className={`h-2 w-2 rounded-full ${isConnected ? "bg-emerald-600 animate-pulse" : "bg-slate-400"}`}></span>
               {isConnected ? "MetaMask Active" : "Wallet Disconnected"}
             </span>
+            <NotificationBell />
           </div>
 
           {isConnected ? (
