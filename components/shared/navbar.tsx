@@ -2,6 +2,7 @@
 
 import React, { useState } from "react";
 import Link from "next/link";
+import Image from "next/image";
 import { usePathname } from "next/navigation";
 import { useWallet } from "@/context/wallet-context";
 import { useTheme } from "@/context/theme-context";
@@ -17,7 +18,6 @@ import {
   CheckCircle2,
   Menu,
   X,
-  Palette,
   Building2
 } from "lucide-react";
 
@@ -40,18 +40,22 @@ export const Navbar = () => {
       <header className="sticky top-0 z-50 w-full border-b border-slate-800/80 bg-slate-950/80 backdrop-blur-xl">
         <div className="w-full max-w-full items-center justify-between px-4 sm:px-6 lg:px-12 flex py-3">
           
-          {/* Logo & Brand */}
+          {/* Logo MIJ Digital & Brand */}
           <Link href="/" className="flex items-center gap-3 group">
-            <div className="relative flex h-10 w-10 items-center justify-center rounded-xl bg-gradient-to-br from-cyan-500 via-indigo-600 to-purple-600 p-[1px] shadow-lg shadow-cyan-500/20 group-hover:shadow-cyan-500/40 transition-all duration-300">
-              <div className="flex h-full w-full items-center justify-center rounded-[11px] bg-slate-950">
-                <Sparkles className="h-5 w-5 text-cyan-400 group-hover:scale-110 transition-transform duration-300" />
+            <div className="relative flex h-11 w-11 items-center justify-center rounded-xl bg-gradient-to-br from-red-600 via-slate-800 to-black p-[1px] shadow-lg shadow-red-500/20 group-hover:shadow-red-500/40 transition-all duration-300">
+              <div className="flex h-full w-full items-center justify-center rounded-[11px] bg-white overflow-hidden p-0.5">
+                <img
+                  src="/logo.jpeg"
+                  alt="MIJ Digital Logo"
+                  className="h-full w-full object-contain"
+                />
               </div>
             </div>
             <div>
-              <span className="text-lg font-bold tracking-tight text-white flex items-center gap-1.5">
-                Nexus<span className="text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 to-indigo-400">Web3</span>
+              <span className="text-lg font-bold tracking-tight text-white flex items-center gap-1">
+                MIJ<span className="text-transparent bg-clip-text bg-gradient-to-r from-red-600 to-red-400">Digital</span>
               </span>
-              <span className="block text-[10px] uppercase tracking-widest font-mono text-slate-400">Portfolio Suite</span>
+              <span className="block text-[10px] uppercase tracking-widest font-mono text-slate-400">Web3 Platform</span>
             </div>
           </Link>
 
@@ -86,24 +90,24 @@ export const Navbar = () => {
             })}
           </nav>
 
-          {/* Right Action: UI Mode Switcher, Wallet Connect & Network Status */}
+          {/* Right Action: UI Theme Switcher, Wallet Connect & Network Status */}
           <div className="hidden sm:flex items-center gap-3">
             
-            {/* UI Theme Toggle Button (Futuristic vs Classic) */}
+            {/* UI Theme Toggle Button (Futuristic vs Classic Paper White) */}
             <button
               onClick={toggleTheme}
-              title={`Switch to ${theme === "futuristic" ? "Classic Fintech" : "Futuristic Neon"} UI`}
+              title={`Switch to ${theme === "futuristic" ? "Classic Paper White" : "Futuristic Dark"} UI`}
               className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-slate-900 hover:bg-slate-800 border border-slate-800 text-xs font-mono text-slate-300 transition-colors"
             >
               {theme === "futuristic" ? (
                 <>
                   <Sparkles className="h-3.5 w-3.5 text-cyan-400" />
-                  <span>Futuristic</span>
+                  <span>Futuristic UI</span>
                 </>
               ) : (
                 <>
-                  <Building2 className="h-3.5 w-3.5 text-amber-400" />
-                  <span>Classic Fintech</span>
+                  <Building2 className="h-3.5 w-3.5 text-amber-600" />
+                  <span>Paper White UI</span>
                 </>
               )}
             </button>
@@ -246,8 +250,8 @@ export const Navbar = () => {
             </button>
 
             <div className="text-center space-y-2 mb-6">
-              <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-2xl bg-cyan-500/10 text-cyan-400 border border-cyan-500/20">
-                <Wallet className="h-6 w-6" />
+              <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-2xl bg-cyan-500/10 text-cyan-400 border border-cyan-500/20 overflow-hidden p-1">
+                <img src="/logo.jpeg" alt="MIJ Digital" className="h-full w-full object-contain" />
               </div>
               <h3 className="text-lg font-bold text-white">Connect Web3 Wallet</h3>
               <p className="text-xs text-slate-400">
@@ -265,7 +269,7 @@ export const Navbar = () => {
                 className="w-full flex items-center justify-between p-4 rounded-2xl bg-slate-800/80 hover:bg-slate-800 border border-slate-700/50 hover:border-cyan-500/50 transition-all duration-200 group"
               >
                 <div className="flex items-center gap-3">
-                  <div className="h-10 w-10 rounded-xl bg-orange-500/10 flex items-center justify-center text-orange-400 border border-orange-500/20">
+                  <div className="h-10 w-10 rounded-xl bg-orange-500/10 flex items-center justify-center text-orange-400 border border-orange-500/20 font-bold">
                     🦊
                   </div>
                   <div className="text-left">
