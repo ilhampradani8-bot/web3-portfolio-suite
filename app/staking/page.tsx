@@ -6,24 +6,41 @@ import { DEFAULT_STAKING_POOL, getUserStakingInfo } from "@/modules/staking/serv
 import { UserStakingAccount } from "@/modules/staking/types/staking";
 import { YieldDisplay } from "@/modules/staking/components/yield-display";
 import { StakingForm } from "@/modules/staking/components/staking-form";
-import { Coins, Sparkles } from "lucide-react";
+import { Coins } from "lucide-react";
 
 export default function StakingPage() {
-  const { address } = useWallet();
+  const { address, isConnected, balanceETH } = useWallet();
   const [userAccount, setUserAccount] = useState<UserStakingAccount>({
     address: "",
-    stakedBalance: 5.5,
-    earnedRewards: 142.85,
-    pendingYield: 0.0412,
-    dailyYield: 0.0018,
-    monthlyYield: 0.054,
+    stakedBalance: 0,
+    earnedRewards: 0,
+    pendingYield: 0,
+    dailyYield: 0,
+    monthlyYield: 0,
   });
 
   useEffect(() => {
-    if (address) {
-      getUserStakingInfo(address).then(setUserAccount);
+    if (isConnected && address) {
+      const numericBalance = parseFloat(balanceETH) || 0;
+      setUserAccount({
+        address,
+        stakedBalance: numericBalance > 0 ? parseFloat((numericBalance * 0.4).toFixed(4)) : 0,
+        earnedRewards: numericBalance > 0 ? parseFloat((numericBalance * 0.05).toFixed(4)) : 0,
+        pendingYield: numericBalance > 0 ? parseFloat((numericBalance * 0.002).toFixed(4)) : 0,
+        dailyYield: numericBalance > 0 ? parseFloat((numericBalance * 0.0005).toFixed(4)) : 0,
+        monthlyYield: numericBalance > 0 ? parseFloat((numericBalance * 0.015).toFixed(4)) : 0,
+      });
+    } else {
+      setUserAccount({
+        address: "",
+        stakedBalance: 0,
+        earnedRewards: 0,
+        pendingYield: 0,
+        dailyYield: 0,
+        monthlyYield: 0,
+      });
     }
-  }, [address]);
+  }, [isConnected, address, balanceETH]);
 
   const handleStakeSuccess = (amount: number) => {
     setUserAccount((prev) => ({
@@ -53,16 +70,16 @@ export default function StakingPage() {
     <div className="space-y-6">
       
       {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-6 border-b border-slate-800">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-6 border-b-2 border-slate-900">
         <div>
-          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full text-xs font-mono font-bold bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 mb-2">
+          <div className="inline-flex items-center gap-2 px-3 py-1 text-xs font-mono font-bold bg-slate-900 text-white mb-2">
             <Coins className="h-3.5 w-3.5" />
             <span>Module 02 • Non-Custodial Yield Protocol</span>
           </div>
-          <h1 className="text-2xl sm:text-3xl font-black text-white tracking-tight">
+          <h1 className="text-2xl sm:text-3xl font-black text-slate-900 tracking-tight">
             Decentralized Staking dApp
           </h1>
-          <p className="text-xs text-slate-400 mt-1">
+          <p className="text-xs text-slate-600 mt-1">
             Stake ETH liquid assets, compound rewards real-time, and manage non-custodial vault balances.
           </p>
         </div>
