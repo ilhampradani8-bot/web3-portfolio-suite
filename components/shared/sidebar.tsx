@@ -11,18 +11,18 @@ import {
   ArrowLeftRight, 
   BarChart3, 
   Wallet, 
-  LogOut, 
   CheckCircle2,
   X,
   Menu,
   AlertCircle,
   ExternalLink,
-  ShieldCheck
+  ShieldCheck,
+  RefreshCw
 } from "lucide-react";
 
 export const Sidebar = () => {
   const pathname = usePathname();
-  const { address, isConnected, balanceETH, hasMetaMask, connectWallet, disconnectWallet } = useWallet();
+  const { address, isConnected, balanceETH, hasMetaMask, walletError, connectWallet, disconnectWallet, clearWalletError } = useWallet();
   const [showWalletModal, setShowWalletModal] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
@@ -125,7 +125,7 @@ export const Sidebar = () => {
               <div className="flex items-center justify-between pt-2 border-t border-slate-200 text-[11px] font-mono">
                 <span className="text-emerald-700 font-bold flex items-center gap-1">
                   <ShieldCheck className="h-3 w-3" />
-                  Real Wallet Connected
+                  MetaMask Connected
                 </span>
                 <button
                   onClick={disconnectWallet}
@@ -137,7 +137,10 @@ export const Sidebar = () => {
             </div>
           ) : (
             <button
-              onClick={() => setShowWalletModal(true)}
+              onClick={() => {
+                clearWalletError();
+                setShowWalletModal(true);
+              }}
               className="w-full py-3 px-4 bg-slate-900 hover:bg-slate-800 text-white font-bold text-xs border border-slate-900 flex items-center justify-center gap-2 shadow-sm"
             >
               <Wallet className="h-4 w-4" />
@@ -158,7 +161,10 @@ export const Sidebar = () => {
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/60 backdrop-blur-sm p-4">
           <div className="relative w-full max-w-md border-2 border-slate-900 bg-white p-6 shadow-2xl space-y-4">
             <button
-              onClick={() => setShowWalletModal(false)}
+              onClick={() => {
+                clearWalletError();
+                setShowWalletModal(false);
+              }}
               className="absolute top-4 right-4 p-1 hover:bg-slate-100 text-slate-700"
             >
               <X className="h-5 w-5" />
@@ -174,11 +180,23 @@ export const Sidebar = () => {
               </p>
             </div>
 
+            {walletError && (
+              <div className="p-3 border-2 border-amber-800 bg-amber-50 text-amber-900 text-xs font-mono space-y-1">
+                <div className="font-bold flex items-center gap-1 text-amber-900">
+                  <AlertCircle className="h-4 w-4 text-amber-700" />
+                  <span>Petunjuk Koneksi MetaMask:</span>
+                </div>
+                <div className="leading-relaxed text-[11px]">{walletError}</div>
+              </div>
+            )}
+
             {hasMetaMask ? (
               <button
                 onClick={async () => {
                   await connectWallet();
-                  setShowWalletModal(false);
+                  if (!walletError) {
+                    setShowWalletModal(false);
+                  }
                 }}
                 className="w-full flex items-center justify-between p-4 bg-slate-900 hover:bg-slate-800 text-white border-2 border-slate-900 font-bold text-xs"
               >

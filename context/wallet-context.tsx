@@ -11,8 +11,10 @@ interface WalletContextType {
   chainName: string;
   chainId: number;
   hasMetaMask: boolean;
+  walletError: string | null;
   connectWallet: () => Promise<void>;
   disconnectWallet: () => void;
+  clearWalletError: () => void;
   switchNetwork: (chainIdHex: string) => Promise<void>;
 }
 
@@ -23,8 +25,10 @@ const WalletContext = createContext<WalletContextType>({
   chainName: "Ethereum Mainnet",
   chainId: 1,
   hasMetaMask: false,
+  walletError: null,
   connectWallet: async () => {},
   disconnectWallet: () => {},
+  clearWalletError: () => {},
   switchNetwork: async () => {},
 });
 
@@ -35,8 +39,9 @@ export const WalletProvider: React.FC<{ children: React.ReactNode }> = ({ childr
   const [chainName, setChainName] = useState<string>("Ethereum Mainnet");
   const [chainId, setChainId] = useState<number>(1);
   const [hasMetaMask, setHasMetaMask] = useState<boolean>(false);
+  const [walletError, setWalletError] = useState<string | null>(null);
 
-  // Fetch REAL ETH Balance from Blockchain RPC
+  // Fetch REAL ETH Balance from EVM RPC Node
   const updateRealBalance = async (userAddr: string, currentChainId: number) => {
     try {
       const targetChain = currentChainId === 11155111 ? sepolia : mainnet;
@@ -48,7 +53,7 @@ export const WalletProvider: React.FC<{ children: React.ReactNode }> = ({ childr
       const formatted = parseFloat(formatEther(balanceBigInt)).toFixed(4);
       setBalanceETH(formatted);
     } catch (err) {
-      console.warn("Could not fetch real balance from RPC", err);
+      console.warn("Could not fetch balance from RPC node", err);
       setBalanceETH("0.0000");
     }
   };
@@ -59,27 +64,31 @@ export const WalletProvider: React.FC<{ children: React.ReactNode }> = ({ childr
       if (ethereum) {
         setHasMetaMask(true);
 
-        // Auto-detect existing connected accounts
-        ethereum.request({ method: "eth_accounts" }).then((accounts: string[]) => {
+        // Auto-check if MetaMask already unlocked and connected
+        ethereum
+          .request({ method: "eth_accounts" })
+          .then((accounts: string[]) => {
+            if (accounts && accounts.length > 0) {
+              setAddress(accounts[0]);
+              setIsConnected(true);
+              updateRealBalance(accounts[0], chainId);
+            }
+          })
+          .catch(() => {});
+
+        // Event listener: Account changes
+        ethereum.on?.("accountsChanged", (accounts: string[]) => {
           if (accounts && accounts.length > 0) {
             setAddress(accounts[0]);
             setIsConnected(true);
-            updateRealBalance(accounts[0], chainId);
-          }
-        }).catch(() => {});
-
-        // Listen for account changes
-        ethereum.on?.("accountsChanged", (accounts: string[]) => {
-          if (accounts.length > 0) {
-            setAddress(accounts[0]);
-            setIsConnected(true);
+            setWalletError(null);
             updateRealBalance(accounts[0], chainId);
           } else {
             disconnectWallet();
           }
         });
 
-        // Listen for network changes
+        // Event listener: Chain changes
         ethereum.on?.("chainChanged", (chainIdHex: string) => {
           const numericChainId = parseInt(chainIdHex, 16);
           setChainId(numericChainId);
@@ -99,22 +108,35 @@ export const WalletProvider: React.FC<{ children: React.ReactNode }> = ({ childr
   }, [address, chainId]);
 
   const connectWallet = async () => {
+    setWalletError(null);
     if (typeof window !== "undefined" && (window as any).ethereum) {
       try {
         const accounts = await (window as any).ethereum.request({
           method: "eth_requestAccounts",
         });
+
         if (accounts && accounts.length > 0) {
           const userAddr = accounts[0];
           setAddress(userAddr);
           setIsConnected(true);
+          setWalletError(null);
           await updateRealBalance(userAddr, chainId);
         }
-      } catch (err) {
-        console.error("User rejected wallet connection", err);
+      } catch (err: any) {
+        console.warn("MetaMask Connection Warning:", err);
+
+        // Safe error code handling
+        if (err.code === 4001) {
+          setWalletError("Koneksi dibatalkan: Anda menutup/menolak pop-up MetaMask.");
+        } else if (err.code === -32002) {
+          setWalletError("Pop-up MetaMask sudah terbuka di browser Anda. Silakan buka icon MetaMask di pojok kanan atas browser untuk menyetujui koneksi.");
+        } else {
+          setWalletError("Gagal terhubung ke MetaMask. Pastikan extension MetaMask Anda dalam keadaan terbuka (unlocked) dan coba klik lagi.");
+        }
       }
     } else {
       setHasMetaMask(false);
+      setWalletError("MetaMask tidak terdeteksi di browser Anda. Silakan pasang extension MetaMask terlebih dahulu.");
     }
   };
 
@@ -122,6 +144,11 @@ export const WalletProvider: React.FC<{ children: React.ReactNode }> = ({ childr
     setAddress(null);
     setIsConnected(false);
     setBalanceETH("0.00");
+    setWalletError(null);
+  };
+
+  const clearWalletError = () => {
+    setWalletError(null);
   };
 
   const switchNetwork = async (chainIdHex: string) => {
@@ -146,8 +173,10 @@ export const WalletProvider: React.FC<{ children: React.ReactNode }> = ({ childr
         chainName,
         chainId,
         hasMetaMask,
+        walletError,
         connectWallet,
         disconnectWallet,
+        clearWalletError,
         switchNetwork,
       }}
     >
