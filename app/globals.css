@@ -7,13 +7,13 @@
 }
 
 /* ==========================================================================
-   Classic Bank / Institutional UI Mode (Times New Roman Serif & Full-Width Layout)
+   Classic Paper White Theme (Institutional Academic & Financial Paper Style)
    ========================================================================== */
 .theme-classic {
   font-family: "Times New Roman", Times, Georgia, "Playfair Display", serif !important;
-  --bg-primary: #0b1329;
-  --card-bg: #111c38;
-  --border-color: #1e2d54;
+  --bg-primary: #fcfbf9;
+  --card-bg: #ffffff;
+  --border-color: #cbd5e1;
 }
 
 .theme-classic * {
@@ -21,11 +21,11 @@
 }
 
 .theme-classic body {
-  background-color: #080d1a !important;
-  color: #e2e8f0 !important;
+  background-color: #f8f6f0 !important;
+  color: #0f172a !important;
 }
 
-/* Full Width Container override for Classic Bank UI */
+/* Full Width Container for Classic Paper UI */
 .theme-classic main {
   max-width: 100% !important;
   padding-left: 1.5rem !important;
@@ -39,51 +39,108 @@
   }
 }
 
-/* Traditional Bank Card & Container Overrides */
+/* Classic Paper Cards & Containers */
 .theme-classic .bg-slate-950,
 .theme-classic .bg-slate-900\/80,
 .theme-classic .bg-slate-900\/90,
-.theme-classic .bg-slate-900 {
-  background-color: #0f1933 !important;
-  border-color: #1e2e57 !important;
-  border-radius: 8px !important;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.4) !important;
+.theme-classic .bg-slate-900,
+.theme-classic .bg-slate-950\/80,
+.theme-classic .bg-slate-950\/60 {
+  background-color: #ffffff !important;
+  color: #0f172a !important;
+  border-color: #cbd5e1 !important;
+  border-radius: 6px !important;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05), 0 1px 2px rgba(0, 0, 0, 0.06) !important;
 }
 
+/* Header & Navbar Paper Style */
 .theme-classic header {
-  background-color: #0a1024 !important;
-  border-bottom: 2px solid #1e3a8a !important;
+  background-color: #fcfbf9 !important;
+  border-bottom: 2px solid #0f172a !important;
+  color: #0f172a !important;
 }
 
 .theme-classic nav {
-  background-color: #0d1630 !important;
+  background-color: #f1f5f9 !important;
+  border: 1px solid #cbd5e1 !important;
   border-radius: 6px !important;
 }
 
+.theme-classic nav a {
+  color: #334155 !important;
+}
+
+.theme-classic nav a.bg-slate-800 {
+  background-color: #ffffff !important;
+  color: #0f172a !important;
+  border: 1px solid #0f172a !important;
+}
+
+/* Typography & Headings in Paper Mode */
+.theme-classic h1,
+.theme-classic h2,
+.theme-classic h3,
+.theme-classic h4,
+.theme-classic .text-white {
+  color: #0f172a !important;
+}
+
+.theme-classic .text-slate-400,
+.theme-classic .text-slate-500,
+.theme-classic .text-slate-300 {
+  color: #475569 !important;
+}
+
+/* Form Inputs Paper Style */
 .theme-classic input, 
 .theme-classic select, 
 .theme-classic textarea {
-  background-color: #090f21 !important;
-  border-color: #1e3a8a !important;
-  border-radius: 6px !important;
+  background-color: #ffffff !important;
+  color: #0f172a !important;
+  border: 1px solid #94a3b8 !important;
+  border-radius: 4px !important;
 }
 
-/* Bank Accent Badges & Colors */
+/* Paper Accents & Stamp Badges */
 .theme-classic .text-cyan-400,
 .theme-classic .text-cyan-300 {
-  color: #60a5fa !important;
+  color: #1e3a8a !important;
 }
 
 .theme-classic .bg-cyan-500\/20,
 .theme-classic .bg-cyan-500\/10 {
-  background-color: #1e3a8a !important;
-  color: #93c5fd !important;
-  border-color: #3b82f6 !important;
+  background-color: #eff6ff !important;
+  color: #1e3a8a !important;
+  border: 1px solid #93c5fd !important;
   border-radius: 4px !important;
 }
 
-.theme-classic button {
-  border-radius: 6px !important;
+.theme-classic .bg-emerald-500\/20,
+.theme-classic .bg-emerald-500\/10 {
+  background-color: #f0fdf4 !important;
+  color: #166534 !important;
+  border: 1px solid #86efac !important;
+}
+
+.theme-classic .bg-purple-500\/20,
+.theme-classic .bg-purple-500\/10 {
+  background-color: #faf5ff !important;
+  color: #6b21a8 !important;
+  border: 1px solid #d8b4fe !important;
+}
+
+.theme-classic .bg-amber-500\/20,
+.theme-classic .bg-amber-500\/10 {
+  background-color: #fffbeb !important;
+  color: #92400e !important;
+  border: 1px solid #fde68a !important;
+}
+
+/* Footer Paper Style */
+.theme-classic footer {
+  background-color: #f8f6f0 !important;
+  border-top: 2px solid #0f172a !important;
+  color: #334155 !important;
 }
 
 /* Custom Scrollbars */
@@ -93,14 +150,14 @@
 }
 
 ::-webkit-scrollbar-track {
-  background: #020617;
+  background: #f1f5f9;
 }
 
 ::-webkit-scrollbar-thumb {
-  background: #1e293b;
+  background: #cbd5e1;
   border-radius: 4px;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: #334155;
+  background: #94a3b8;
 }

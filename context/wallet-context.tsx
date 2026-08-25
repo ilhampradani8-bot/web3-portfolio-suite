@@ -1,6 +1,8 @@
 "use client";
 
 import React, { createContext, useContext, useState, useEffect } from "react";
+import { createPublicClient, http, formatEther } from "viem";
+import { mainnet, sepolia } from "viem/chains";
 
 interface WalletContextType {
   address: string | null;
@@ -8,9 +10,11 @@ interface WalletContextType {
   isDemo: boolean;
   balanceETH: string;
   chainName: string;
+  chainId: number;
   connectWallet: () => Promise<void>;
   connectDemoWallet: () => void;
   disconnectWallet: () => void;
+  switchNetwork: (chainIdHex: string) => Promise<void>;
 }
 
 const WalletContext = createContext<WalletContextType>({
@@ -19,9 +23,11 @@ const WalletContext = createContext<WalletContextType>({
   isDemo: false,
   balanceETH: "0.00",
   chainName: "Ethereum Mainnet",
+  chainId: 1,
   connectWallet: async () => {},
   connectDemoWallet: () => {},
   disconnectWallet: () => {},
+  switchNetwork: async () => {},
 });
 
 const DEMO_WALLET = "0x71C7656EC7ab88b098defB751B7401B5f6d8976F";
@@ -32,21 +38,57 @@ export const WalletProvider: React.FC<{ children: React.ReactNode }> = ({ childr
   const [isDemo, setIsDemo] = useState<boolean>(false);
   const [balanceETH, setBalanceETH] = useState<string>("12.450");
   const [chainName, setChainName] = useState<string>("Ethereum Mainnet");
+  const [chainId, setChainId] = useState<number>(1);
+
+  // Fetch real balance from RPC if real wallet connected
+  const updateRealWalletBalance = async (addr: string) => {
+    try {
+      if (typeof window !== "undefined" && (window as any).ethereum) {
+        const client = createPublicClient({
+          chain: chainId === 11155111 ? sepolia : mainnet,
+          transport: http(),
+        });
+        const balanceBigInt = await client.getBalance({ address: addr as `0x${string}` });
+        const formatted = parseFloat(formatEther(balanceBigInt)).toFixed(4);
+        setBalanceETH(formatted);
+      }
+    } catch (err) {
+      console.warn("Using cached balance view", err);
+    }
+  };
 
   useEffect(() => {
-    // Check if ethereum window object is present
+    // Check if window.ethereum exists in browser
     if (typeof window !== "undefined" && (window as any).ethereum) {
-      (window as any).ethereum.on?.("accountsChanged", (accounts: string[]) => {
+      const ethereum = (window as any).ethereum;
+
+      // Handle account change in MetaMask
+      ethereum.on?.("accountsChanged", (accounts: string[]) => {
         if (accounts.length > 0) {
           setAddress(accounts[0]);
           setIsConnected(true);
           setIsDemo(false);
+          updateRealWalletBalance(accounts[0]);
         } else {
           disconnectWallet();
         }
       });
+
+      // Handle chain change in MetaMask
+      ethereum.on?.("chainChanged", (chainIdHex: string) => {
+        const numericChainId = parseInt(chainIdHex, 16);
+        setChainId(numericChainId);
+        if (numericChainId === 11155111) {
+          setChainName("Sepolia Testnet");
+        } else {
+          setChainName("Ethereum Mainnet");
+        }
+        if (address) {
+          updateRealWalletBalance(address);
+        }
+      });
     }
-  }, []);
+  }, [address, chainId]);
 
   const connectWallet = async () => {
     if (typeof window !== "undefined" && (window as any).ethereum) {
@@ -55,17 +97,17 @@ export const WalletProvider: React.FC<{ children: React.ReactNode }> = ({ childr
           method: "eth_requestAccounts",
         });
         if (accounts && accounts.length > 0) {
-          setAddress(accounts[0]);
+          const userAddress = accounts[0];
+          setAddress(userAddress);
           setIsConnected(true);
           setIsDemo(false);
-          setBalanceETH("2.845");
-          setChainName("Ethereum Mainnet");
+          await updateRealWalletBalance(userAddress);
         }
       } catch (err) {
-        console.error("User rejected wallet connection", err);
+        console.error("User rejected wallet connection or closed modal", err);
       }
     } else {
-      // Fallback to Demo mode if no Web3 wallet extension is installed
+      // Fallback to pre-funded Demo Mode if extension is not installed
       connectDemoWallet();
     }
   };
@@ -75,13 +117,28 @@ export const WalletProvider: React.FC<{ children: React.ReactNode }> = ({ childr
     setIsConnected(true);
     setIsDemo(true);
     setBalanceETH("12.450");
-    setChainName("Ethereum Mainnet (Demo)");
+    setChainName("Sepolia (Demo)");
+    setChainId(11155111);
   };
 
   const disconnectWallet = () => {
     setAddress(null);
     setIsConnected(false);
     setIsDemo(false);
+    setBalanceETH("0.00");
+  };
+
+  const switchNetwork = async (chainIdHex: string) => {
+    if (typeof window !== "undefined" && (window as any).ethereum) {
+      try {
+        await (window as any).ethereum.request({
+          method: "wallet_switchEthereumChain",
+          params: [{ chainId: chainIdHex }],
+        });
+      } catch (err) {
+        console.error("Failed to switch network", err);
+      }
+    }
   };
 
   return (
@@ -92,9 +149,11 @@ export const WalletProvider: React.FC<{ children: React.ReactNode }> = ({ childr
         isDemo,
         balanceETH,
         chainName,
+        chainId,
         connectWallet,
         connectDemoWallet,
         disconnectWallet,
+        switchNetwork,
       }}
     >
       {children}
