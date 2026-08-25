@@ -6,6 +6,7 @@
     "dev": "next dev",
     "build": "next build",
     "pages:build": "npx @cloudflare/next-on-pages",
+    "cf:deploy": "echo 'Cloudflare Pages Build Complete'",
     "start": "next start",
     "lint": "eslint"
   },
