@@ -1,30 +1,33 @@
-import { createPublicClient, http } from "viem";
-import { mainnet, polygon, arbitrum, optimism } from "viem/chains";
+import { createPublicClient, http, webSocket } from "viem";
+import { mainnet, sepolia, polygon } from "viem/chains";
 
-// Public RPC Clients for EVM Chains
+// Detect Alchemy Key from Environment Variables
+const ALCHEMY_KEY = process.env.NEXT_PUBLIC_ALCHEMY_API_KEY || "";
+const ALCHEMY_HTTP_URL = ALCHEMY_KEY
+  ? `https://eth-mainnet.g.alchemy.com/v2/${ALCHEMY_KEY}`
+  : "https://cloudflare-eth.com"; // Cloudflare Web3 Public RPC Node
+
+const ALCHEMY_WS_URL = ALCHEMY_KEY
+  ? `wss://eth-mainnet.g.alchemy.com/v2/${ALCHEMY_KEY}`
+  : null;
+
+// Viem Public Client powered by Alchemy HTTP RPC Node
 export const ethereumClient = createPublicClient({
   chain: mainnet,
-  transport: http("https://cloudflare-eth.com"),
+  transport: http(ALCHEMY_HTTP_URL),
 });
 
-export const polygonClient = createPublicClient({
-  chain: polygon,
-  transport: http("https://polygon-rpc.com"),
+// Viem Sepolia Testnet Public Client
+export const sepoliaClient = createPublicClient({
+  chain: sepolia,
+  transport: http(),
 });
 
-export const arbitrumClient = createPublicClient({
-  chain: arbitrum,
-  transport: http("https://arb1.arbitrum.io/rpc"),
-});
+// Helper to check if WebSocket is available with Alchemy Key
+export const isWebSocketEnabled = (): boolean => {
+  return Boolean(ALCHEMY_WS_URL);
+};
 
-export const optimismClient = createPublicClient({
-  chain: optimism,
-  transport: http("https://mainnet.optimism.io"),
-});
-
-export const NETWORK_EXPLORERS: Record<string, string> = {
-  ethereum: "https://etherscan.io",
-  polygon: "https://polygonscan.com",
-  arbitrum: "https://arbiscan.io",
-  optimism: "https://optimistic.etherscan.io",
+export const getAlchemyWsUrl = (): string | null => {
+  return ALCHEMY_WS_URL;
 };
