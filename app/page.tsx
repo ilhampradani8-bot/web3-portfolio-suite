@@ -4,35 +4,33 @@ import {
   Coins, 
   ArrowLeftRight, 
   BarChart3, 
-  Sparkles, 
   ArrowRight, 
   ShieldCheck, 
-  Globe, 
   Cpu, 
+  Lock,
+  Zap,
+  Globe,
+  Database,
   Code2,
-  Building2,
-  LineChart,
-  Lock
+  Rocket
 } from "lucide-react";
 
 export const metadata = {
-  title: "Nexus Web3 Enterprise Suite | Decentralized Financial Analytics & Protocol Tools",
-  description: "Institutional-grade Web3 platform featuring On-Chain Whale Stream, Decentralized Liquid Staking, Multi-DEX Arbitrage Engine, and Relational Blockchain Data Console.",
-  keywords: ["Web3 Platform", "Decentralized Finance", "Whale Tracker", "ETH Staking", "DEX Scanner", "Dune Analytics SQL"],
+  title: "MIJ Digital Web3 Enterprise Suite | Decentralized Financial Analytics & Protocol Tools",
+  description: "Institutional-grade Web3 platform featuring On-Chain Whale Stream, Decentralized Liquid Staking, Multi-DEX Arbitrage Engine, Relational Blockchain Data Console, and Smart Contract Deployer Studio.",
 };
 
 export default function Home() {
+
   const projects = [
     {
       title: "1. Institutional On-Chain Whale Tracker",
-      subtitle: "High-Frequency Real-Time Blockchain Stream",
+      subtitle: "High-Frequency Real-Time EVM Stream",
       description: "Monitors high-value capital transfers (> $500,000 USD) across Ethereum, Arbitrum, and Polygon mainnets with direct Etherscan transaction audit links.",
       href: "/whale-tracker",
       icon: Waves,
-      gradient: "from-cyan-500/20 via-blue-500/10 to-transparent",
-      borderColor: "border-cyan-500/30",
-      badge: "EVM Live Stream",
-      badgeColor: "bg-cyan-500/20 text-cyan-300 border-cyan-500/30",
+      badge: "Live Stream",
+      badgeColor: "bg-[#F0F9FF] text-[#0369A1] border-[#BAE6FD]",
     },
     {
       title: "2. Non-Custodial ETH Staking Protocol",
@@ -40,10 +38,8 @@ export default function Home() {
       description: "Non-custodial liquid staking interface offering 12.4% APY. Features real-time reward accrual ticker, compound yield calculator, and smart contract interaction.",
       href: "/staking",
       icon: Coins,
-      gradient: "from-emerald-500/20 via-teal-500/10 to-transparent",
-      borderColor: "border-emerald-500/30",
       badge: "12.4% APY Yield",
-      badgeColor: "bg-emerald-500/20 text-emerald-300 border-emerald-500/30",
+      badgeColor: "bg-[#ECFDF5] text-[#047857] border-[#A7F3D0]",
     },
     {
       title: "3. Multi-DEX Arbitrage Scanner",
@@ -51,10 +47,8 @@ export default function Home() {
       description: "Real-time pricing matrix scanning Uniswap v3, Sushiswap, Curve, and PancakeSwap. Includes Flashloan ROI calculator with gas fee and slippage modeling.",
       href: "/arbitrage",
       icon: ArrowLeftRight,
-      gradient: "from-purple-500/20 via-indigo-500/10 to-transparent",
-      borderColor: "border-purple-500/30",
       badge: "Atomic Flashloan",
-      badgeColor: "bg-purple-500/20 text-purple-300 border-purple-500/30",
+      badgeColor: "bg-[#FAF5FF] text-[#7E22CE] border-[#E9D5FF]",
     },
     {
       title: "4. Enterprise Blockchain Data Console",
@@ -62,97 +56,175 @@ export default function Home() {
       description: "Relational blockchain analytics suite featuring custom SQL terminal query execution, protocol TVL trends, active wallet metrics, and gas burn visualizer.",
       href: "/dashboard",
       icon: BarChart3,
-      gradient: "from-amber-500/20 via-orange-500/10 to-transparent",
-      borderColor: "border-amber-500/30",
       badge: "Relational SQL",
-      badgeColor: "bg-amber-500/20 text-amber-300 border-amber-500/30",
+      badgeColor: "bg-[#FFFBEB] text-[#B45309] border-[#FDE68A]",
+    },
+    {
+      title: "5. Smart Contract Deployer Studio",
+      subtitle: "No-Code EVM Contract Deployment Pipeline",
+      description: "One-click deployment studio for ERC-20 Tokens, NFT Collections, Staking Vaults, and custom Solidity bytecodes directly to Sepolia Testnet or Ethereum Mainnet.",
+      href: "/contract-deployer",
+      icon: Rocket,
+      badge: "EVM Deployer",
+      badgeColor: "bg-[#FFF1F2] text-[#BE123C] border-[#FECDD3]",
+    },
+  ];
+
+  const techFeatures = [
+    {
+      icon: Lock,
+      title: "100% Non-Custodial Security (Aman)",
+      description: "Bebas dari risiko simpanan private key atau database terpusat. Seluruh transaksi dan saldo dibaca 100% langsung dari dompet browser MetaMask via Viem EVM RPC Client.",
+      color: "text-emerald-700 bg-emerald-50 border-emerald-300",
+    },
+    {
+      icon: Zap,
+      title: "Lightweight Edge Architecture (Ringan)",
+      description: "Dibangun dengan Next.js 16 App Router & Tailwind CSS tanpa bloatware. Render halaman instan di edge server Vercel & Cloudflare Pages dengan konsumsi bandwidth minimal.",
+      color: "text-indigo-700 bg-indigo-50 border-indigo-300",
+    },
+    {
+      icon: Cpu,
+      title: "Alchemy Multichain WebSockets (Live)",
+      description: "Terhubung ke Alchemy Dedicated Node Provider (300 Juta CU/Bulan) via WebSocket (`wss://`) untuk streaming blok dan transfer capital whale tanpa jeda delay.",
+      color: "text-cyan-700 bg-cyan-50 border-cyan-300",
+    },
+    {
+      icon: Globe,
+      title: "Integrasi Real Public Open APIs",
+      description: "Terhubung langsung ke DexScreener Open API (`api.dexscreener.com`) untuk harga real-time WETH/USDC dan DefiLlama Open API (`api.llama.fi`) untuk analisis TVL on-chain.",
+      color: "text-purple-700 bg-purple-50 border-purple-300",
     },
   ];
 
   return (
-    <div className="space-y-12 py-4">
+    <div className="space-y-8 pb-4">
       
-      {/* Hero Banner with Institutional Corporate Copywriting */}
-      <div className="relative overflow-hidden rounded-3xl border border-slate-800 bg-gradient-to-br from-slate-900 via-slate-900 to-slate-950 p-8 sm:p-12 shadow-2xl">
-        <div className="absolute top-0 right-0 -mt-12 -mr-12 h-64 w-64 rounded-full bg-cyan-500/10 blur-3xl"></div>
-        <div className="absolute bottom-0 left-0 -mb-12 -ml-12 h-64 w-64 rounded-full bg-purple-500/10 blur-3xl"></div>
+      {/* 100% Edge-to-Edge Full-Width Classic Banner with Background Image */}
+      <div className="-mx-4 sm:-mx-6 lg:-mx-8 -mt-4 sm:-mt-6 lg:-mt-8 mb-8 relative border-b border-slate-300 bg-slate-900 overflow-hidden text-white">
+        
+        {/* Full-Width Background Image Tag (Bulletproof Rendering) */}
+        <img 
+          src="/assets/baground.png" 
+          alt="MIJ Digital Web3 Background" 
+          className="absolute inset-0 w-full h-full object-cover object-center z-0"
+        />
 
-        <div className="relative z-10 max-w-4xl space-y-6">
-          <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full text-xs font-mono font-bold bg-cyan-500/10 text-cyan-300 border border-cyan-500/20">
-            <Building2 className="h-3.5 w-3.5" />
-            <span>Nexus Enterprise Financial Infrastructure</span>
+        {/* Dark Overlay gradient for contrast & readability */}
+        <div className="absolute inset-0 bg-slate-950/80 backdrop-blur-[2px] z-10"></div>
+
+        <div className="relative z-20 w-full max-w-7xl mx-auto px-6 sm:px-10 lg:px-12 py-12 sm:py-16 space-y-6">
+          
+          <div className="inline-flex items-center gap-2 px-3.5 py-1.5 font-mono text-xs font-bold bg-indigo-950/90 text-indigo-300 border border-indigo-500/50">
+            <ShieldCheck className="h-4 w-4 text-indigo-400" />
+            <span>MIJ DIGITAL • Web3 Enterprise Portfolio & Financial Suite</span>
           </div>
 
-          <h1 className="text-3xl sm:text-5xl font-black tracking-tight text-white leading-tight">
-            Decentralized Financial Analytics & <span className="text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 via-teal-300 to-indigo-400">Protocol Suite</span>
+          <h1 className="text-3xl sm:text-5xl font-black tracking-tight text-white leading-tight uppercase">
+            Decentralized Financial Analytics & <span className="text-indigo-400">Protocol Suite</span>
           </h1>
 
-          <p className="text-sm sm:text-base text-slate-300 leading-relaxed">
-            Nexus Platform delivers institutional-grade Web3 data visibility and non-custodial protocol interaction. Powered by Next.js App Router, Viem, Ethers.js, and public EVM RPC nodes — operating 100% database-free with zero private key retention.
+          <p className="text-sm sm:text-base text-slate-200 leading-relaxed font-normal max-w-4xl">
+            Platform finansial Web3 modern bergaya institusional yang menggabungkan analisis data *on-chain real-time*, protokol *liquid staking non-custodial*, scanner arbitrase multi-DEX, hingga studio deployment *smart contract* Solidity.
           </p>
 
-          <div className="flex flex-wrap items-center gap-4 pt-2 font-mono text-xs">
-            <div className="flex items-center gap-2 text-slate-200 bg-slate-800/80 px-3.5 py-2 rounded-xl border border-slate-700">
-              <Cpu className="h-4 w-4 text-cyan-400" />
-              <span>EVM RPC Direct Connect</span>
+          {/* Quick Stats Badges */}
+          <div className="flex flex-wrap items-center gap-3 pt-2 font-mono text-xs">
+            <div className="flex items-center gap-2 text-white bg-slate-900/90 px-3.5 py-2 border border-slate-700 font-bold">
+              <Cpu className="h-4 w-4 text-indigo-400" />
+              <span>Next.js 16 & Viem Client</span>
             </div>
-            <div className="flex items-center gap-2 text-slate-200 bg-slate-800/80 px-3.5 py-2 rounded-xl border border-slate-700">
-              <Lock className="h-4 w-4 text-purple-400" />
-              <span>Non-Custodial Architecture</span>
+            <div className="flex items-center gap-2 text-white bg-slate-900/90 px-3.5 py-2 border border-slate-700 font-bold">
+              <Lock className="h-4 w-4 text-emerald-400" />
+              <span>100% Non-Custodial Architecture</span>
             </div>
-            <div className="flex items-center gap-2 text-slate-200 bg-slate-800/80 px-3.5 py-2 rounded-xl border border-slate-700">
-              <ShieldCheck className="h-4 w-4 text-emerald-400" />
-              <span>Vercel Edge Ready</span>
+            <div className="flex items-center gap-2 text-white bg-slate-900/90 px-3.5 py-2 border border-slate-700 font-bold">
+              <Database className="h-4 w-4 text-cyan-400" />
+              <span>Alchemy RPC Node Direct</span>
             </div>
           </div>
+
         </div>
       </div>
 
-      {/* 4 Projects Grid Showcase */}
-      <div className="space-y-6">
-        <div className="flex items-center justify-between">
-          <div>
-            <h2 className="text-xl font-bold text-white tracking-tight">Enterprise Protocol Modules</h2>
-            <p className="text-xs text-slate-400">Select an active module below to explore protocol capabilities:</p>
-          </div>
+
+
+      {/* Techstack & Security Architecture Section ("Aman & Ringan") */}
+      <div className="space-y-4">
+        <div className="border-b-2 border-slate-900 pb-2">
+          <h2 className="text-lg font-extrabold text-slate-900 tracking-tight flex items-center gap-2 uppercase">
+            <Code2 className="h-5 w-5 text-indigo-600" />
+            <span>Arsitektur Techstack (Aman, Ringan, & Modern)</span>
+          </h2>
+          <p className="text-xs text-slate-600 font-medium mt-0.5">
+            Mengapa suite ini aman dari risiko keamanan dan cepat dijalankan di lingkungan lokal maupun cloud deployment:
+          </p>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          {techFeatures.map((feat, idx) => {
+            const Icon = feat.icon;
+            return (
+              <div
+                key={idx}
+                className="p-5 bg-white border border-slate-300 space-y-2.5 shadow-xs"
+              >
+                <div className="flex items-center gap-3">
+                  <div className={`p-2 border ${feat.color}`}>
+                    <Icon className="h-4.5 w-4.5" />
+                  </div>
+                  <h3 className="text-sm font-bold text-slate-900">{feat.title}</h3>
+                </div>
+                <p className="text-xs text-slate-600 leading-relaxed font-normal">
+                  {feat.description}
+                </p>
+              </div>
+            );
+          })}
+        </div>
+      </div>
+
+      {/* 5 Enterprise Protocol Modules Grid Showcase */}
+      <div className="space-y-4 pt-2">
+        <div className="border-b-2 border-slate-900 pb-2">
+          <h2 className="text-lg font-extrabold text-slate-900 tracking-tight uppercase">Enterprise Protocol Modules</h2>
+          <p className="text-xs text-slate-600 font-medium">Pilih modul di bawah ini untuk berinteraksi langsung secara live:</p>
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           {projects.map((project) => {
             const Icon = project.icon;
             return (
               <Link
                 key={project.href}
                 href={project.href}
-                className={`group relative overflow-hidden rounded-3xl border ${project.borderColor} bg-slate-900/80 p-6 sm:p-8 hover:bg-slate-900 transition-all duration-300 shadow-xl hover:shadow-cyan-500/10 flex flex-col justify-between`}
+                className="group bg-white border border-slate-300 p-5 sm:p-6 transition-all duration-150 shadow-xs hover:border-slate-900 flex flex-col justify-between"
               >
-                <div className={`absolute top-0 right-0 h-48 w-48 bg-gradient-to-br ${project.gradient} rounded-full blur-2xl group-hover:scale-125 transition-transform duration-500`}></div>
-
-                <div className="relative z-10 space-y-4">
+                <div className="space-y-3.5">
                   <div className="flex items-center justify-between">
-                    <div className="h-12 w-12 rounded-2xl bg-slate-950 flex items-center justify-center border border-slate-800 text-cyan-400 group-hover:border-cyan-500/50 transition-colors">
-                      <Icon className="h-6 w-6 group-hover:scale-110 transition-transform duration-300" />
+                    <div className="h-10 w-10 bg-slate-100 flex items-center justify-center border border-slate-300 text-slate-900 group-hover:bg-slate-900 group-hover:text-white transition-colors">
+                      <Icon className="h-5 w-5" />
                     </div>
-                    <span className={`text-xs font-mono font-bold px-3 py-1 rounded-full border ${project.badgeColor}`}>
+                    <span className={`text-[10px] font-mono font-bold px-2.5 py-0.5 border ${project.badgeColor}`}>
                       {project.badge}
                     </span>
                   </div>
 
                   <div>
-                    <h3 className="text-lg font-bold text-white group-hover:text-cyan-400 transition-colors flex items-center gap-2">
-                      <span>{project.title}</span>
+                    <h3 className="text-base font-bold text-slate-900 group-hover:text-indigo-600 transition-colors">
+                      {project.title}
                     </h3>
-                    <div className="text-xs font-mono text-cyan-400 mt-1 font-semibold">
+                    <div className="text-xs font-mono text-indigo-700 font-bold mt-1">
                       {project.subtitle}
                     </div>
-                    <p className="text-xs text-slate-400 leading-relaxed mt-2">
+                    <p className="text-xs text-slate-600 leading-relaxed mt-2 font-normal">
                       {project.description}
                     </p>
                   </div>
                 </div>
 
-                <div className="relative z-10 mt-6 pt-4 border-t border-slate-800/80 flex items-center justify-between text-xs font-mono font-bold text-cyan-400 group-hover:translate-x-1 transition-transform">
-                  <span>Launch Enterprise Module</span>
+                <div className="mt-5 pt-3 border-t border-slate-200 flex items-center justify-between text-xs font-bold text-indigo-600 group-hover:translate-x-1 transition-transform">
+                  <span>Buka Modul Enterprise</span>
                   <ArrowRight className="h-4 w-4" />
                 </div>
               </Link>
@@ -164,3 +236,7 @@ export default function Home() {
     </div>
   );
 }
+
+
+
+

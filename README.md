@@ -40,3 +40,4 @@ npm run dev
 ```
 
 Buka `http://localhost:3000` di browser Anda.
+

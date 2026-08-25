@@ -58,54 +58,67 @@ export const WalletProvider: React.FC<{ children: React.ReactNode }> = ({ childr
     }
   };
 
+  const disconnectWallet = () => {
+    setAddress(null);
+    setIsConnected(false);
+    setBalanceETH("0.00");
+    setWalletError(null);
+  };
+
   useEffect(() => {
-    if (typeof window !== "undefined") {
-      const ethereum = (window as any).ethereum;
-      if (ethereum) {
-        setHasMetaMask(true);
+    if (typeof window === "undefined") return;
 
-        // Auto-check if MetaMask already unlocked and connected
-        ethereum
-          .request({ method: "eth_accounts" })
-          .then((accounts: string[]) => {
-            if (accounts && accounts.length > 0) {
-              setAddress(accounts[0]);
-              setIsConnected(true);
-              updateRealBalance(accounts[0], chainId);
-            }
-          })
-          .catch(() => {});
+    const ethereum = (window as any).ethereum;
+    if (ethereum) {
+      setHasMetaMask(true);
 
-        // Event listener: Account changes
-        ethereum.on?.("accountsChanged", (accounts: string[]) => {
+      // Auto-check if MetaMask already unlocked and connected
+      ethereum
+        .request({ method: "eth_accounts" })
+        .then((accounts: string[]) => {
           if (accounts && accounts.length > 0) {
             setAddress(accounts[0]);
             setIsConnected(true);
-            setWalletError(null);
             updateRealBalance(accounts[0], chainId);
-          } else {
-            disconnectWallet();
           }
-        });
+        })
+        .catch(() => {});
 
-        // Event listener: Chain changes
-        ethereum.on?.("chainChanged", (chainIdHex: string) => {
-          const numericChainId = parseInt(chainIdHex, 16);
-          setChainId(numericChainId);
-          if (numericChainId === 11155111) {
-            setChainName("Sepolia Testnet");
-          } else {
-            setChainName("Ethereum Mainnet");
-          }
-          if (address) {
-            updateRealBalance(address, numericChainId);
-          }
-        });
-      } else {
-        setHasMetaMask(false);
-      }
+      const handleAccountsChanged = (accounts: string[]) => {
+        if (accounts && accounts.length > 0) {
+          setAddress(accounts[0]);
+          setIsConnected(true);
+          setWalletError(null);
+          updateRealBalance(accounts[0], chainId);
+        } else {
+          disconnectWallet();
+        }
+      };
+
+      const handleChainChanged = (chainIdHex: string) => {
+        const numericChainId = parseInt(chainIdHex, 16);
+        setChainId(numericChainId);
+        if (numericChainId === 11155111) {
+          setChainName("Sepolia Testnet");
+        } else {
+          setChainName("Ethereum Mainnet");
+        }
+        if (address) {
+          updateRealBalance(address, numericChainId);
+        }
+      };
+
+      ethereum.on?.("accountsChanged", handleAccountsChanged);
+      ethereum.on?.("chainChanged", handleChainChanged);
+
+      return () => {
+        ethereum.removeListener?.("accountsChanged", handleAccountsChanged);
+        ethereum.removeListener?.("chainChanged", handleChainChanged);
+      };
+    } else {
+      setHasMetaMask(false);
     }
-  }, [address, chainId]);
+  }, []);
 
   const connectWallet = async () => {
     setWalletError(null);
@@ -126,9 +139,9 @@ export const WalletProvider: React.FC<{ children: React.ReactNode }> = ({ childr
         console.warn("MetaMask Connection Warning:", err);
 
         // Safe error code handling
-        if (err.code === 4001) {
+        if (err?.code === 4001) {
           setWalletError("Koneksi dibatalkan: Anda menutup/menolak pop-up MetaMask.");
-        } else if (err.code === -32002) {
+        } else if (err?.code === -32002) {
           setWalletError("Pop-up MetaMask sudah terbuka di browser Anda. Silakan buka icon MetaMask di pojok kanan atas browser untuk menyetujui koneksi.");
         } else {
           setWalletError("Gagal terhubung ke MetaMask. Pastikan extension MetaMask Anda dalam keadaan terbuka (unlocked) dan coba klik lagi.");
@@ -138,13 +151,6 @@ export const WalletProvider: React.FC<{ children: React.ReactNode }> = ({ childr
       setHasMetaMask(false);
       setWalletError("MetaMask tidak terdeteksi di browser Anda. Silakan pasang extension MetaMask terlebih dahulu.");
     }
-  };
-
-  const disconnectWallet = () => {
-    setAddress(null);
-    setIsConnected(false);
-    setBalanceETH("0.00");
-    setWalletError(null);
   };
 
   const clearWalletError = () => {
@@ -184,5 +190,6 @@ export const WalletProvider: React.FC<{ children: React.ReactNode }> = ({ childr
     </WalletContext.Provider>
   );
 };
+
 
 export const useWallet = () => useContext(WalletContext);

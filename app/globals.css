@@ -2,25 +2,29 @@
 
 @layer base {
   body {
-    @apply bg-slate-50 text-slate-900 antialiased font-serif min-h-screen selection:bg-red-500/20 selection:text-red-900;
-    font-family: "Times New Roman", Times, Georgia, serif !important;
-    background-color: #f8f6f0 !important;
+    @apply bg-slate-50 text-slate-900 antialiased font-sans min-h-screen selection:bg-indigo-500/20 selection:text-indigo-900;
+    font-family: var(--font-sans), ui-sans-serif, system-ui, sans-serif !important;
+    background-color: #f8fafc !important;
     color: #0f172a !important;
   }
 
   * {
-    font-family: "Times New Roman", Times, Georgia, serif !important;
-    border-radius: 0px !important; /* Kotak / Sharp Edge Banking Style */
+    font-family: var(--font-sans), ui-sans-serif, system-ui, sans-serif;
+    border-radius: 0px !important; /* Kotak Presisi Sharp Edges Classic */
+  }
+
+  code, pre, .font-mono {
+    font-family: var(--font-mono), ui-monospace, SFMono-Regular, monospace !important;
   }
 }
 
-/* Base White Paper Layout Rules */
+/* Base Layout Rules */
 main {
   width: 100% !important;
   max-width: 100% !important;
 }
 
-/* Sharp Square Containers & Banking Cards */
+/* Classic Square Cards & Containers */
 .bg-slate-950,
 .bg-slate-900\/80,
 .bg-slate-900\/90,
@@ -33,97 +37,145 @@ main {
   color: #0f172a !important;
   border: 1px solid #cbd5e1 !important;
   border-radius: 0px !important;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05) !important;
+  box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.05) !important;
 }
 
 header, sidebar, aside {
   background-color: #ffffff !important;
-  border-color: #94a3b8 !important;
+  border-color: #cbd5e1 !important;
   color: #0f172a !important;
   border-radius: 0px !important;
 }
 
-/* Typography Headings in Paper White Mode */
+/* Typography Headings */
 h1, h2, h3, h4, h5, h6,
 .text-white {
   color: #0f172a !important;
+  font-weight: 800 !important;
 }
 
 .text-slate-400,
 .text-slate-500,
 .text-slate-300,
 .text-slate-200 {
-  color: #334155 !important;
+  color: #475569 !important;
 }
 
-/* Form Inputs & Tables */
+/* Sharp Square Form Inputs & Selects */
 input, select, textarea {
   background-color: #ffffff !important;
   color: #0f172a !important;
-  border: 1px solid #94a3b8 !important;
+  border: 1px solid #cbd5e1 !important;
   border-radius: 0px !important;
+  box-shadow: none !important;
+  font-weight: 500 !important;
+  padding: 10px 14px !important;
 }
 
+input:focus, select:focus, textarea:focus {
+  outline: none !important;
+  border-color: #4f46e5 !important;
+  box-shadow: inset 0 0 0 1px #4f46e5 !important;
+}
+
+/* Classic High-Contrast Sharp Tables */
 table {
   border: 1px solid #cbd5e1 !important;
+  border-radius: 0px !important;
+  overflow: hidden !important;
+  background-color: #ffffff !important;
 }
 
 thead {
   background-color: #f1f5f9 !important;
   color: #0f172a !important;
   border-bottom: 2px solid #0f172a !important;
+  font-weight: 700 !important;
 }
 
-/* Accent Badges & Stamp Buttons */
+th {
+  color: #0f172a !important;
+  font-weight: 700 !important;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  font-size: 11px !important;
+  padding: 14px 18px !important;
+}
+
+td {
+  border-bottom: 1px solid #e2e8f0 !important;
+  color: #0f172a !important;
+  font-size: 13px !important;
+  padding: 14px 18px !important;
+}
+
+tr:hover td {
+  background-color: #f8fafc !important;
+}
+
+/* Sharp Square Classic Buttons */
+button, .btn-neobrutalism {
+  border-radius: 0px !important;
+  border: 1px solid #cbd5e1 !important;
+  font-weight: 700 !important;
+  transition: all 0.15s ease-in-out !important;
+}
+
+button:hover, .btn-neobrutalism:hover {
+  background-color: #f1f5f9 !important;
+}
+
+/* Classic Accent Badges */
 .text-cyan-400,
 .text-cyan-300 {
-  color: #991b1b !important; /* Red MIJ Brand Accent */
+  color: #0284c7 !important;
+  font-weight: 700 !important;
 }
 
 .bg-cyan-500\/20,
 .bg-cyan-500\/10 {
-  background-color: #fef2f2 !important;
-  color: #991b1b !important;
-  border: 1px solid #fca5a5 !important;
+  background-color: #f0f9ff !important;
+  color: #0369a1 !important;
+  border: 1px solid #bae6fd !important;
   border-radius: 0px !important;
+  font-weight: 700 !important;
 }
 
 .bg-emerald-500\/20,
 .bg-emerald-500\/10 {
-  background-color: #f0fdf4 !important;
-  color: #166534 !important;
-  border: 1px solid #86efac !important;
+  background-color: #ecfdf5 !important;
+  color: #047857 !important;
+  border: 1px solid #a7f3d0 !important;
   border-radius: 0px !important;
+  font-weight: 700 !important;
 }
 
 .bg-purple-500\/20,
 .bg-purple-500\/10 {
   background-color: #faf5ff !important;
-  color: #6b21a8 !important;
-  border: 1px solid #d8b4fe !important;
+  color: #7e22ce !important;
+  border: 1px solid #e9d5ff !important;
   border-radius: 0px !important;
+  font-weight: 700 !important;
 }
 
 .bg-amber-500\/20,
 .bg-amber-500\/10 {
   background-color: #fffbeb !important;
-  color: #92400e !important;
+  color: #b45309 !important;
   border: 1px solid #fde68a !important;
   border-radius: 0px !important;
+  font-weight: 700 !important;
 }
 
-button {
-  border-radius: 0px !important;
-}
-
-/* Custom Scrollbars */
+/* Custom Classic Scrollbars */
 ::-webkit-scrollbar {
-  width: 8px;
-  height: 8px;
+  width: 6px;
+  height: 6px;
 }
 
 ::-webkit-scrollbar-track {
-  background: #f8f6f0;
+  background: #f8fafc;
 }
 
 ::-webkit-scrollbar-thumb {
@@ -134,3 +186,6 @@ button {
 ::-webkit-scrollbar-thumb:hover {
   background: #94a3b8;
 }
+
+
+

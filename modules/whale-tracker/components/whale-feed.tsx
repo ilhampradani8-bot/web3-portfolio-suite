@@ -137,13 +137,19 @@ export const WhaleFeed = () => {
           <select
             value={networkFilter}
             onChange={(e) => setNetworkFilter(e.target.value)}
-            className="bg-white text-slate-900 border border-slate-400 px-3 py-2 focus:outline-none focus:border-red-700"
+            className="bg-white text-slate-900 border border-slate-400 px-3 py-2 focus:outline-none focus:border-indigo-600 font-bold"
           >
-            <option value="ALL">All Networks</option>
-            <option value="Ethereum">Ethereum</option>
-            <option value="Arbitrum">Arbitrum</option>
-            <option value="Polygon">Polygon</option>
+            <option value="ALL">All EVM Networks (8 Active)</option>
+            <option value="Ethereum">Ethereum Mainnet (ETH)</option>
+            <option value="Sepolia">Sepolia Testnet</option>
+            <option value="Arbitrum">Arbitrum One (L2)</option>
+            <option value="Polygon">Polygon PoS (POL)</option>
+            <option value="Optimism">OP Mainnet (Optimism)</option>
+            <option value="Base">Base (Coinbase L2)</option>
+            <option value="BSC">BNB Smart Chain (BSC)</option>
+            <option value="Avalanche">Avalanche C-Chain (AVAX)</option>
           </select>
+
         </div>
 
       </div>
