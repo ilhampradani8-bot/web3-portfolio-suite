@@ -34,6 +34,22 @@ const WalletContext = createContext<WalletContextType>({
   refreshBalance: async () => {},
 });
 
+// Helper function to reliably get MetaMask provider even with multi-wallet extensions
+const getMetaMaskProvider = (): any => {
+  if (typeof window === "undefined") return null;
+
+  const win = window as any;
+  if (!win.ethereum) return null;
+
+  // Handle multi-wallet extension proxies (e.g. Phantom + MetaMask + Coinbase)
+  if (win.ethereum.providers?.length) {
+    const provider = win.ethereum.providers.find((p: any) => p.isMetaMask);
+    if (provider) return provider;
+  }
+
+  return win.ethereum;
+};
+
 export const WalletProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [address, setAddress] = useState<string | null>(null);
   const [isConnected, setIsConnected] = useState<boolean>(false);
@@ -43,14 +59,14 @@ export const WalletProvider: React.FC<{ children: React.ReactNode }> = ({ childr
   const [hasMetaMask, setHasMetaMask] = useState<boolean>(false);
   const [walletError, setWalletError] = useState<string | null>(null);
 
-  // Fetch REAL ETH Balance directly from MetaMask provider or Viem RPC Node
+  // Fetch REAL ETH Balance directly from provider or Viem RPC Node
   const updateRealBalance = async (userAddr: string, targetChainId?: number) => {
     if (!userAddr) return;
 
-    // 1. Try directly asking active MetaMask provider first
-    if (typeof window !== "undefined" && (window as any).ethereum) {
+    const provider = getMetaMaskProvider();
+    if (provider) {
       try {
-        const hexBalance = await (window as any).ethereum.request({
+        const hexBalance = await provider.request({
           method: "eth_getBalance",
           params: [userAddr, "latest"],
         });
@@ -64,7 +80,6 @@ export const WalletProvider: React.FC<{ children: React.ReactNode }> = ({ childr
       }
     }
 
-    // 2. Fallback to Viem RPC client
     try {
       const activeChainId = targetChainId || chainId;
       const targetChain = activeChainId === 11155111 ? sepolia : mainnet;
@@ -94,76 +109,97 @@ export const WalletProvider: React.FC<{ children: React.ReactNode }> = ({ childr
     setWalletError(null);
   };
 
+  // Robust Async MetaMask Detection Engine with Polling & Event Listeners
   useEffect(() => {
     if (typeof window === "undefined") return;
 
-    const ethereum = (window as any).ethereum;
-    if (ethereum) {
-      setHasMetaMask(true);
+    const detectProvider = () => {
+      const ethereum = getMetaMaskProvider();
+      if (ethereum) {
+        setHasMetaMask(true);
 
-      // 1. Fetch active Chain ID on load
-      ethereum
-        .request({ method: "eth_chainId" })
-        .then((hexChainId: string) => {
-          const numericChainId = parseInt(hexChainId, 16);
-          setChainId(numericChainId);
-          setChainName(numericChainId === 11155111 ? "Sepolia Testnet" : "Ethereum Mainnet");
-        })
-        .catch(() => {});
+        // Fetch active Chain ID on load
+        ethereum
+          .request({ method: "eth_chainId" })
+          .then((hexChainId: string) => {
+            const numericChainId = parseInt(hexChainId, 16);
+            setChainId(numericChainId);
+            setChainName(numericChainId === 11155111 ? "Sepolia Testnet" : "Ethereum Mainnet");
+          })
+          .catch(() => {});
 
-      // 2. Auto-check if MetaMask already unlocked and connected
-      ethereum
-        .request({ method: "eth_accounts" })
-        .then((accounts: string[]) => {
+        // Auto-check if MetaMask already unlocked and connected
+        ethereum
+          .request({ method: "eth_accounts" })
+          .then((accounts: string[]) => {
+            if (accounts && accounts.length > 0) {
+              setAddress(accounts[0]);
+              setIsConnected(true);
+              updateRealBalance(accounts[0]);
+            }
+          })
+          .catch(() => {});
+
+        const handleAccountsChanged = (accounts: string[]) => {
           if (accounts && accounts.length > 0) {
             setAddress(accounts[0]);
             setIsConnected(true);
+            setWalletError(null);
             updateRealBalance(accounts[0]);
+          } else {
+            disconnectWallet();
           }
-        })
-        .catch(() => {});
+        };
 
-      const handleAccountsChanged = (accounts: string[]) => {
-        if (accounts && accounts.length > 0) {
-          setAddress(accounts[0]);
-          setIsConnected(true);
-          setWalletError(null);
-          updateRealBalance(accounts[0]);
-        } else {
-          disconnectWallet();
-        }
-      };
+        const handleChainChanged = (chainIdHex: string) => {
+          const numericChainId = parseInt(chainIdHex, 16);
+          setChainId(numericChainId);
+          setChainName(numericChainId === 11155111 ? "Sepolia Testnet" : "Ethereum Mainnet");
+          if (address) {
+            updateRealBalance(address, numericChainId);
+          }
+        };
 
-      const handleChainChanged = (chainIdHex: string) => {
-        const numericChainId = parseInt(chainIdHex, 16);
-        setChainId(numericChainId);
-        setChainName(numericChainId === 11155111 ? "Sepolia Testnet" : "Ethereum Mainnet");
-        if (address) {
-          updateRealBalance(address, numericChainId);
-        }
-      };
+        ethereum.on?.("accountsChanged", handleAccountsChanged);
+        ethereum.on?.("chainChanged", handleChainChanged);
+      } else {
+        setHasMetaMask(false);
+      }
+    };
 
-      ethereum.on?.("accountsChanged", handleAccountsChanged);
-      ethereum.on?.("chainChanged", handleChainChanged);
+    // 1. Immediate Detection Attempt
+    detectProvider();
 
-      return () => {
-        ethereum.removeListener?.("accountsChanged", handleAccountsChanged);
-        ethereum.removeListener?.("chainChanged", handleChainChanged);
-      };
-    } else {
-      setHasMetaMask(false);
-    }
+    // 2. Listen for ethereum#initialized event (used by extensions on slower loads)
+    window.addEventListener("ethereum#initialized", detectProvider, { once: true });
+
+    // 3. Retry polling up to 2 seconds for slower browser extensions or mobile Web3 webviews
+    let retries = 0;
+    const interval = setInterval(() => {
+      if (getMetaMaskProvider() || retries > 10) {
+        detectProvider();
+        clearInterval(interval);
+      }
+      retries++;
+    }, 200);
+
+    return () => {
+      window.removeEventListener("ethereum#initialized", detectProvider);
+      clearInterval(interval);
+    };
   }, [address]);
 
   const connectWallet = async () => {
     setWalletError(null);
-    if (typeof window !== "undefined" && (window as any).ethereum) {
+    const ethereum = getMetaMaskProvider();
+
+    if (ethereum) {
       try {
-        const accounts = await (window as any).ethereum.request({
+        const accounts = await ethereum.request({
           method: "eth_requestAccounts",
         });
 
-        const hexChainId = await (window as any).ethereum.request({
+        const hexChainId = await ethereum.request({
           method: "eth_chainId",
         });
         const numericChainId = parseInt(hexChainId, 16);
@@ -181,16 +217,26 @@ export const WalletProvider: React.FC<{ children: React.ReactNode }> = ({ childr
         console.warn("MetaMask Connection Warning:", err);
 
         if (err?.code === 4001) {
-          setWalletError("Koneksi dibatalkan: Anda menutup/menolak pop-up MetaMask.");
+          setWalletError("Connection Canceled: You closed or rejected the MetaMask prompt.");
         } else if (err?.code === -32002) {
-          setWalletError("Pop-up MetaMask sudah terbuka di browser Anda. Silakan buka icon MetaMask di pojok kanan atas browser untuk menyetujui koneksi.");
+          setWalletError("MetaMask prompt is already open in your browser. Please click the MetaMask extension icon in the top right to approve.");
         } else {
-          setWalletError("Gagal terhubung ke MetaMask. Pastikan extension MetaMask Anda dalam keadaan terbuka (unlocked) dan coba klik lagi.");
+          setWalletError("Failed to connect to MetaMask. Make sure your extension is unlocked and try again.");
         }
       }
     } else {
       setHasMetaMask(false);
-      setWalletError("MetaMask tidak terdeteksi di browser Anda. Silakan pasang extension MetaMask terlebih dahulu.");
+      
+      // Check if user is on mobile browser
+      const isMobile = /Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
+      if (isMobile) {
+        setWalletError("MetaMask is not injected in this mobile browser. Redirecting to open inside MetaMask Mobile App...");
+        const currentUrl = encodeURIComponent(window.location.href);
+        window.location.href = `https://metamask.app.link/dapp/${window.location.host}${window.location.pathname}`;
+      } else {
+        setWalletError("MetaMask extension not detected. Please install the MetaMask browser extension or use a Web3 enabled browser.");
+        window.open("https://metamask.io/download/", "_blank");
+      }
     }
   };
 
@@ -199,9 +245,10 @@ export const WalletProvider: React.FC<{ children: React.ReactNode }> = ({ childr
   };
 
   const switchNetwork = async (chainIdHex: string) => {
-    if (typeof window !== "undefined" && (window as any).ethereum) {
+    const ethereum = getMetaMaskProvider();
+    if (ethereum) {
       try {
-        await (window as any).ethereum.request({
+        await ethereum.request({
           method: "wallet_switchEthereumChain",
           params: [{ chainId: chainIdHex }],
         });
