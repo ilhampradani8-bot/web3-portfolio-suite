@@ -1,6 +1,7 @@
 "use client";
 
 import React, { createContext, useContext, useState, useEffect } from "react";
+import { useWallet } from "./wallet-context";
 
 export interface OnChainNotification {
   id: string;
@@ -32,7 +33,11 @@ const NotificationContext = createContext<NotificationContextType>({
 });
 
 export const NotificationProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  const [notifications, setNotifications] = useState<OnChainNotification[]>([
+  const { address, isConnected } = useWallet();
+  const [notifications, setNotifications] = useState<OnChainNotification[]>([]);
+
+  // Default initial live event notifications
+  const defaultNotifications: OnChainNotification[] = [
     {
       id: "notif-1",
       title: "Whale Movement Alert",
@@ -60,7 +65,29 @@ export const NotificationProvider: React.FC<{ children: React.ReactNode }> = ({ 
       timestamp: "10 mins ago",
       read: true,
     },
-  ]);
+  ];
+
+  // Load notifications dynamically per connected wallet address
+  useEffect(() => {
+    if (isConnected && address) {
+      const storageKey = `web3_notifications_${address.toLowerCase()}`;
+      const savedRaw = localStorage.getItem(storageKey);
+      if (savedRaw) {
+        try {
+          const parsed = JSON.parse(savedRaw);
+          setNotifications(parsed);
+          return;
+        } catch (e) {
+          console.warn("Could not parse stored notifications", e);
+        }
+      }
+      // If no custom notifications yet for this address, save defaults
+      setNotifications(defaultNotifications);
+      localStorage.setItem(storageKey, JSON.stringify(defaultNotifications));
+    } else {
+      setNotifications(defaultNotifications);
+    }
+  }, [isConnected, address]);
 
   const unreadCount = notifications.filter((n) => !n.read).length;
 
@@ -68,24 +95,55 @@ export const NotificationProvider: React.FC<{ children: React.ReactNode }> = ({ 
     const newNotif: OnChainNotification = {
       ...notif,
       id: `notif-${Date.now()}`,
-      timestamp: "Just now",
+      timestamp: new Date().toLocaleTimeString("en-US", { hour: "2-digit", minute: "2-digit" }),
       read: false,
     };
-    setNotifications((prev) => [newNotif, ...prev]);
+
+    setNotifications((prev) => {
+      const updated = [newNotif, ...prev];
+      if (isConnected && address) {
+        const storageKey = `web3_notifications_${address.toLowerCase()}`;
+        localStorage.setItem(storageKey, JSON.stringify(updated));
+      }
+      return updated;
+    });
+
+    // Play Audio Chime Sound Alert if enabled
+    try {
+      const audio = new Audio("https://assets.mixkit.co/active_storage/sfx/2869/2869-preview.mp3");
+      audio.volume = 0.4;
+      audio.play().catch(() => {});
+    } catch (e) {}
   };
 
   const markAsRead = (id: string) => {
-    setNotifications((prev) =>
-      prev.map((n) => (n.id === id ? { ...n, read: true } : n))
-    );
+    setNotifications((prev) => {
+      const updated = prev.map((n) => (n.id === id ? { ...n, read: true } : n));
+      if (isConnected && address) {
+        const storageKey = `web3_notifications_${address.toLowerCase()}`;
+        localStorage.setItem(storageKey, JSON.stringify(updated));
+      }
+      return updated;
+    });
   };
 
   const markAllAsRead = () => {
-    setNotifications((prev) => prev.map((n) => ({ ...n, read: true })));
+    setNotifications((prev) => {
+      const updated = prev.map((n) => ({ ...n, read: true }));
+      if (isConnected && address) {
+        const storageKey = `web3_notifications_${address.toLowerCase()}`;
+        localStorage.setItem(storageKey, JSON.stringify(updated));
+      }
+      return updated;
+    });
   };
 
   const clearAll = () => {
     setNotifications([]);
+    if (isConnected && address) {
+      const storageKey = `web3_notifications_${address.toLowerCase()}`;
+      localStorage.removeItem(storageKey);
+    }
   };
 
   return (

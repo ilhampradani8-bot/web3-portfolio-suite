@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import { useWallet } from "@/context/wallet-context";
 import {
   STAKING_POOLS,
@@ -33,7 +33,7 @@ export default function StakingPage() {
   const [stakingHistory, setStakingHistory] = useState<StakingTxHistoryItem[]>([]);
 
   // Automatically query real on-chain transfers from Alchemy EVM RPC + LocalStorage on connect
-  const loadOnChainStakingData = async (userAddr: string) => {
+  const loadOnChainStakingData = useCallback(async (userAddr: string, apy: number) => {
     setIsLoadingOnChain(true);
 
     // 1. Load local saved transactions
@@ -69,7 +69,7 @@ export default function StakingPage() {
 
     // Calculate total staked strictly from confirmed EVM transfers
     const totalStakedFromTxs = mergedTxs.reduce((sum, tx) => sum + tx.amount, 0);
-    const annualReturn = (totalStakedFromTxs * selectedPool.apyPercentage) / 100;
+    const annualReturn = (totalStakedFromTxs * apy) / 100;
 
     setStakingHistory(mergedTxs);
     setUserAccount({
@@ -82,11 +82,11 @@ export default function StakingPage() {
     });
 
     setIsLoadingOnChain(false);
-  };
+  }, []);
 
   useEffect(() => {
     if (isConnected && address) {
-      loadOnChainStakingData(address);
+      loadOnChainStakingData(address, selectedPool.apyPercentage);
     } else {
       setStakingHistory([]);
       setUserAccount({
@@ -98,7 +98,7 @@ export default function StakingPage() {
         monthlyYield: 0,
       });
     }
-  }, [isConnected, address, selectedPool.id]);
+  }, [isConnected, address, selectedPool.id, selectedPool.apyPercentage, loadOnChainStakingData]);
 
   // Real-Time Second-by-Second Yield Accrual Engine (Runs when stakedBalance > 0)
   useEffect(() => {
@@ -194,7 +194,7 @@ export default function StakingPage() {
         <div className="flex items-center gap-2">
           {isConnected && address && (
             <button
-              onClick={() => loadOnChainStakingData(address)}
+              onClick={() => loadOnChainStakingData(address, selectedPool.apyPercentage)}
               disabled={isLoadingOnChain}
               className="flex items-center gap-1.5 px-3 py-2 text-xs font-bold bg-slate-100 hover:bg-slate-200 text-slate-900 border-2 border-slate-900 shadow-sm transition-all"
               title="Deteksi Ulang Transaksi On-Chain dari Alchemy RPC Node"
