@@ -11,6 +11,9 @@ interface WalletContextType {
   chainName: string;
   chainId: number;
   hasMetaMask: boolean;
+  isDetecting: boolean;
+  isConnecting: boolean;
+  detectionStatus: "DETECTED" | "SCANNING" | "NOT_FOUND";
   walletError: string | null;
   connectWallet: () => Promise<void>;
   disconnectWallet: () => void;
@@ -26,6 +29,9 @@ const WalletContext = createContext<WalletContextType>({
   chainName: "Ethereum Mainnet",
   chainId: 1,
   hasMetaMask: false,
+  isDetecting: true,
+  isConnecting: false,
+  detectionStatus: "SCANNING",
   walletError: null,
   connectWallet: async () => {},
   disconnectWallet: () => {},
@@ -67,6 +73,9 @@ export const WalletProvider: React.FC<{ children: React.ReactNode }> = ({ childr
   const [chainName, setChainName] = useState<string>("Ethereum Mainnet");
   const [chainId, setChainId] = useState<number>(1);
   const [hasMetaMask, setHasMetaMask] = useState<boolean>(false);
+  const [isDetecting, setIsDetecting] = useState<boolean>(true);
+  const [isConnecting, setIsConnecting] = useState<boolean>(false);
+  const [detectionStatus, setDetectionStatus] = useState<"DETECTED" | "SCANNING" | "NOT_FOUND">("SCANNING");
   const [walletError, setWalletError] = useState<string | null>(null);
 
   // Fetch REAL ETH Balance directly from provider or Viem RPC Node
@@ -129,6 +138,8 @@ export const WalletProvider: React.FC<{ children: React.ReactNode }> = ({ childr
       const ethereum = getMetaMaskProvider();
       if (ethereum) {
         setHasMetaMask(true);
+        setIsDetecting(false);
+        setDetectionStatus("DETECTED");
 
         // Fetch active Chain ID
         ethereum
@@ -193,12 +204,18 @@ export const WalletProvider: React.FC<{ children: React.ReactNode }> = ({ childr
     detectProvider();
     window.addEventListener("ethereum#initialized", detectProvider, { once: true });
 
-    // 3. Continuous polling up to 5 seconds after page mount to handle slow loading browser extensions
+    // 3. Continuous polling up to 3 seconds after page mount
     let count = 0;
     const interval = setInterval(() => {
       detectProvider();
       count++;
-      if (count > 25) clearInterval(interval);
+      if (count > 15) {
+        clearInterval(interval);
+        setIsDetecting(false);
+        if (!getMetaMaskProvider()) {
+          setDetectionStatus("NOT_FOUND");
+        }
+      }
     }, 200);
 
     return () => {
@@ -208,9 +225,10 @@ export const WalletProvider: React.FC<{ children: React.ReactNode }> = ({ childr
     };
   }, [address]);
 
-  // Connect Wallet Function with Dynamic On-The-Fly Provider Resolution
+  // Connect Wallet Function with Dynamic On-The-Fly Provider Resolution & Loading UX
   const connectWallet = async () => {
     setWalletError(null);
+    setIsConnecting(true);
 
     // Dynamic resolution at the exact moment user clicks "Connect"
     let ethereum = getMetaMaskProvider();
@@ -224,6 +242,7 @@ export const WalletProvider: React.FC<{ children: React.ReactNode }> = ({ childr
 
     if (ethereum) {
       setHasMetaMask(true);
+      setDetectionStatus("DETECTED");
       try {
         const accounts = await ethereum.request({
           method: "eth_requestAccounts",
@@ -253,9 +272,13 @@ export const WalletProvider: React.FC<{ children: React.ReactNode }> = ({ childr
         } else {
           setWalletError("Failed to connect to MetaMask. Make sure your extension is unlocked and try again.");
         }
+      } finally {
+        setIsConnecting(false);
       }
     } else {
       setHasMetaMask(false);
+      setDetectionStatus("NOT_FOUND");
+      setIsConnecting(false);
       
       // Mobile Browser handling vs Desktop
       const isMobile = /Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
@@ -296,6 +319,9 @@ export const WalletProvider: React.FC<{ children: React.ReactNode }> = ({ childr
         chainName,
         chainId,
         hasMetaMask,
+        isDetecting,
+        isConnecting,
+        detectionStatus,
         walletError,
         connectWallet,
         disconnectWallet,
