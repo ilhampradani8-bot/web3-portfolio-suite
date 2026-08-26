@@ -2,7 +2,7 @@
 
 Decentralized Financial Analytics & Protocol Suite built with **Next.js 16 (App Router)**, **Viem EVM RPC Clients**, **TypeScript**, and **Vanilla Tailwind CSS**.
 
-> 🟢 **Production Build**: Verified & Auto-Deployed on **Vercel Serverless Edge** with **Alchemy Multichain Nodes** (`alch_DXNMWIMwQ-2-KsLr5ywty`).
+> 🟢 **Production Build**: Verified & Auto-Deployed on **Vercel Serverless Edge** with **Alchemy Multichain Nodes**.
 
 ---
 
@@ -57,11 +57,11 @@ Create a `.env.local` file in the root directory or configure in Vercel Dashboar
 
 ```env
 # Alchemy Multichain Node Key
-NEXT_PUBLIC_ALCHEMY_API_KEY=alch_DXNMWIMwQ-2-KsLr5ywty
+NEXT_PUBLIC_ALCHEMY_API_KEY=your_alchemy_api_key_here
 
 # Telegram Bot Integration Secrets (Server-Only - Never exposed to client JS)
-TELEGRAM_BOT_TOKEN=8821015524:AAEcyqLy1KKMP5oDItw6QSGuKcGgiDjxwDw
-TELEGRAM_CHAT_ID=
+TELEGRAM_BOT_TOKEN=your_telegram_bot_token_here
+TELEGRAM_CHAT_ID=your_telegram_chat_id_here
 ```
 
 ---
