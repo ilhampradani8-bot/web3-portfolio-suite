@@ -212,7 +212,7 @@ export const WalletProvider: React.FC<{ children: React.ReactNode }> = ({ childr
     };
   }, [address, isConnected]);
 
-  // Connect Wallet Function - PURELY MANUAL TRIGGER ON BUTTON CLICK
+  // Connect Wallet Function - GRACEFUL INPAGE.JS ERROR HANDLING
   const connectWallet = async () => {
     setWalletError(null);
     setIsConnecting(true);
@@ -250,14 +250,17 @@ export const WalletProvider: React.FC<{ children: React.ReactNode }> = ({ childr
           await updateRealBalance(userAddr, numericChainId);
         }
       } catch (err: any) {
-        console.warn("MetaMask Connection Warning:", err);
+        console.warn("MetaMask Extension Connection Warning:", err);
 
-        if (err?.code === 4001) {
+        const errMsg = err?.message || String(err || "");
+        const errCode = err?.code;
+
+        if (errCode === 4001 || errMsg.includes("User rejected")) {
           setWalletError("Connection Canceled: You closed or rejected the MetaMask prompt.");
-        } else if (err?.code === -32002) {
-          setWalletError("MetaMask prompt is already open in your browser. Please click the MetaMask extension icon in the top right to approve.");
+        } else if (errCode === -32002 || errMsg.includes("Already processing") || errMsg.includes("Resource unavailable")) {
+          setWalletError("MetaMask prompt is ALREADY OPEN in your browser toolbar. Please click the orange MetaMask fox icon in the top right of your Chrome browser to approve connection.");
         } else {
-          setWalletError("Failed to connect to MetaMask. Make sure your extension is unlocked and try again.");
+          setWalletError(`MetaMask status: ${errMsg || "Please unlock your extension and try again."}`);
         }
       } finally {
         setIsConnecting(false);
