@@ -128,7 +128,7 @@ export const WalletProvider: React.FC<{ children: React.ReactNode }> = ({ childr
     setWalletError(null);
   };
 
-  // Robust Async Detection Engine: EIP-6963 + Polling + Event Listeners
+  // Robust Async Provider Detection (Purely detects extension presence without auto-connecting)
   useEffect(() => {
     if (typeof window === "undefined") return;
 
@@ -151,25 +151,12 @@ export const WalletProvider: React.FC<{ children: React.ReactNode }> = ({ childr
           })
           .catch(() => {});
 
-        // Auto-check if MetaMask already unlocked and connected
-        ethereum
-          .request({ method: "eth_accounts" })
-          .then((accounts: string[]) => {
-            if (accounts && accounts.length > 0) {
-              setAddress(accounts[0]);
-              setIsConnected(true);
-              updateRealBalance(accounts[0]);
-            }
-          })
-          .catch(() => {});
-
         const handleAccountsChanged = (accounts: string[]) => {
-          if (accounts && accounts.length > 0) {
+          if (isConnected && accounts && accounts.length > 0) {
             setAddress(accounts[0]);
-            setIsConnected(true);
             setWalletError(null);
             updateRealBalance(accounts[0]);
-          } else {
+          } else if (isConnected && (!accounts || accounts.length === 0)) {
             disconnectWallet();
           }
         };
@@ -178,7 +165,7 @@ export const WalletProvider: React.FC<{ children: React.ReactNode }> = ({ childr
           const numericChainId = parseInt(chainIdHex, 16);
           setChainId(numericChainId);
           setChainName(numericChainId === 11155111 ? "Sepolia Testnet" : "Ethereum Mainnet");
-          if (address) {
+          if (address && isConnected) {
             updateRealBalance(address, numericChainId);
           }
         };
@@ -223,9 +210,9 @@ export const WalletProvider: React.FC<{ children: React.ReactNode }> = ({ childr
       window.removeEventListener("ethereum#initialized", detectProvider);
       clearInterval(interval);
     };
-  }, [address]);
+  }, [address, isConnected]);
 
-  // Connect Wallet Function with Dynamic On-The-Fly Provider Resolution & Loading UX
+  // Connect Wallet Function - PURELY MANUAL TRIGGER ON BUTTON CLICK
   const connectWallet = async () => {
     setWalletError(null);
     setIsConnecting(true);
