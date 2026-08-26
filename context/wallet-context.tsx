@@ -34,20 +34,30 @@ const WalletContext = createContext<WalletContextType>({
   refreshBalance: async () => {},
 });
 
-// Helper function to reliably get MetaMask provider even with multi-wallet extensions
+// Helper function to dynamically resolve MetaMask provider from window, providers array, or EIP-6963
 const getMetaMaskProvider = (): any => {
   if (typeof window === "undefined") return null;
 
   const win = window as any;
-  if (!win.ethereum) return null;
 
-  // Handle multi-wallet extension proxies (e.g. Phantom + MetaMask + Coinbase)
-  if (win.ethereum.providers?.length) {
-    const provider = win.ethereum.providers.find((p: any) => p.isMetaMask);
-    if (provider) return provider;
+  // 1. Direct window.ethereum check
+  if (win.ethereum) {
+    // Multi-wallet extension array handling (Phantom + MetaMask + Coinbase)
+    if (win.ethereum.providers?.length) {
+      const mmProvider = win.ethereum.providers.find((p: any) => p.isMetaMask);
+      if (mmProvider) return mmProvider;
+    }
+    if (win.ethereum.isMetaMask) return win.ethereum;
+    return win.ethereum;
   }
 
-  return win.ethereum;
+  // 2. Check EIP-6963 announced providers fallback
+  if (win.__eip6963Providers?.length) {
+    const eipProvider = win.__eip6963Providers.find((p: any) => p.info?.rdns?.includes("metamask") || p.provider?.isMetaMask);
+    if (eipProvider) return eipProvider.provider;
+  }
+
+  return null;
 };
 
 export const WalletProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
@@ -109,16 +119,18 @@ export const WalletProvider: React.FC<{ children: React.ReactNode }> = ({ childr
     setWalletError(null);
   };
 
-  // Robust Async MetaMask Detection Engine with Polling & Event Listeners
+  // Robust Async Detection Engine: EIP-6963 + Polling + Event Listeners
   useEffect(() => {
     if (typeof window === "undefined") return;
+
+    const win = window as any;
 
     const detectProvider = () => {
       const ethereum = getMetaMaskProvider();
       if (ethereum) {
         setHasMetaMask(true);
 
-        // Fetch active Chain ID on load
+        // Fetch active Chain ID
         ethereum
           .request({ method: "eth_chainId" })
           .then((hexChainId: string) => {
@@ -167,33 +179,51 @@ export const WalletProvider: React.FC<{ children: React.ReactNode }> = ({ childr
       }
     };
 
-    // 1. Immediate Detection Attempt
-    detectProvider();
+    // 1. EIP-6963 Standard Listener for instant extension announcement without reload
+    const handleAnnounce = (event: any) => {
+      if (!win.__eip6963Providers) win.__eip6963Providers = [];
+      win.__eip6963Providers.push(event.detail);
+      detectProvider();
+    };
 
-    // 2. Listen for ethereum#initialized event (used by extensions on slower loads)
+    window.addEventListener("eip6963:announceProvider", handleAnnounce);
+    window.dispatchEvent(new Event("eip6963:requestProvider"));
+
+    // 2. Immediate & Event Detection Attempts
+    detectProvider();
     window.addEventListener("ethereum#initialized", detectProvider, { once: true });
 
-    // 3. Retry polling up to 2 seconds for slower browser extensions or mobile Web3 webviews
-    let retries = 0;
+    // 3. Continuous polling up to 5 seconds after page mount to handle slow loading browser extensions
+    let count = 0;
     const interval = setInterval(() => {
-      if (getMetaMaskProvider() || retries > 10) {
-        detectProvider();
-        clearInterval(interval);
-      }
-      retries++;
+      detectProvider();
+      count++;
+      if (count > 25) clearInterval(interval);
     }, 200);
 
     return () => {
+      window.removeEventListener("eip6963:announceProvider", handleAnnounce);
       window.removeEventListener("ethereum#initialized", detectProvider);
       clearInterval(interval);
     };
   }, [address]);
 
+  // Connect Wallet Function with Dynamic On-The-Fly Provider Resolution
   const connectWallet = async () => {
     setWalletError(null);
-    const ethereum = getMetaMaskProvider();
+
+    // Dynamic resolution at the exact moment user clicks "Connect"
+    let ethereum = getMetaMaskProvider();
+
+    // If not detected immediately on click, wait 300ms and try one more dynamic check
+    if (!ethereum && typeof window !== "undefined") {
+      window.dispatchEvent(new Event("eip6963:requestProvider"));
+      await new Promise((resolve) => setTimeout(resolve, 300));
+      ethereum = getMetaMaskProvider();
+    }
 
     if (ethereum) {
+      setHasMetaMask(true);
       try {
         const accounts = await ethereum.request({
           method: "eth_requestAccounts",
@@ -227,14 +257,13 @@ export const WalletProvider: React.FC<{ children: React.ReactNode }> = ({ childr
     } else {
       setHasMetaMask(false);
       
-      // Check if user is on mobile browser
+      // Mobile Browser handling vs Desktop
       const isMobile = /Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
       if (isMobile) {
         setWalletError("MetaMask is not injected in this mobile browser. Redirecting to open inside MetaMask Mobile App...");
-        const currentUrl = encodeURIComponent(window.location.href);
         window.location.href = `https://metamask.app.link/dapp/${window.location.host}${window.location.pathname}`;
       } else {
-        setWalletError("MetaMask extension not detected. Please install the MetaMask browser extension or use a Web3 enabled browser.");
+        setWalletError("MetaMask extension not detected. Please make sure the MetaMask extension is enabled in your browser extensions manager.");
         window.open("https://metamask.io/download/", "_blank");
       }
     }
